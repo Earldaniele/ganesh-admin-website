@@ -1,6 +1,6 @@
 // Presentation rules only: never remove these values from the saved snapshot.
 const internalFields = new Set([
-  "id", "schemaVersion", "order", "assetId", "src", "source", "orderBuilderProduct",
+  "id", "categoryId", "schemaVersion", "editorIntegrationVersion", "kind", "order", "assetId", "src", "source", "orderBuilderProduct",
   "href", "url", "path", "route", "anchor", "slug", "target", "external",
   "linkDestination", "destination", "facebook", "maps",
 ]);
@@ -27,6 +27,12 @@ const labels: Record<string, string> = {
   followJourney: "Journey button text", buildOrder: "Order button text",
   specialRequest: "Special request button text", moreGuidance: "Guidance button text",
   active: "Show", details: "Details", relatedProductIds: "Related products",
+  featuredProducts: "Featured products", poster: "Video poster image", video: "Product video",
+  supportCopy: "Support chat copy", prompts: "Suggested questions", reply: "Sample reply", thinkingLabel: "Preparing reply text", composerPlaceholder: "Disabled chat input text",
+  gallery: "Image gallery", tagline: "Product tagline", benefits: "Fabric benefits", recommendedUses: "Recommended uses",
+  HeroHeader: "Hero copy", FeaturedProduct: "Featured product controls", WhatWeMake: "Product showcase copy",
+  FabricExplorer: "Fabric explorer controls", BuildYourOrder: "Order form controls", SiteHeader: "Header controls", SiteFooter: "Footer copy",
+  productsPage: "Products page copy", customizePage: "Customize page copy", ourWorkPage: "Our Work page copy", productionPage: "Production page copy",
 };
 
 export function isHiddenEditorField(name: string): boolean {
@@ -36,7 +42,7 @@ export function isHiddenEditorField(name: string): boolean {
 }
 
 export function fieldLabel(name: string): string {
-  return labels[name] ?? name.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (c) => c.toUpperCase());
+  return labels[name] ?? name.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/([a-zA-Z])(\d+)/g, "$1 $2").replace(/^./, (c) => c.toUpperCase());
 }
 
 function fieldPosition(name: string, value: unknown): number {

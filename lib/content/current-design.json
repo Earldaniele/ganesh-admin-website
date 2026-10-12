@@ -1,0 +1,1536 @@
+{
+  "schemaVersion": 1,
+  "editorIntegrationVersion": 2,
+  "designCopy": {
+    "HeroHeader": {
+      "buttonText3": "."
+    },
+    "FeaturedProduct": {
+      "description": "Featured product",
+      "description2": "of",
+      "description3": "Featured Product",
+      "detailLabel3": "Custom options",
+      "buttonText": "Get a Quote",
+      "buttonText2": "View Details"
+    },
+    "WhatWeMake": {
+      "buttonText3": "×"
+    },
+    "FabricExplorer": {
+      "heading2": "Categories",
+      "buttonText": "Search fabric categories",
+      "description2": "No categories found.",
+      "description3": "Fabric collection",
+      "buttonText2": "Search within",
+      "buttonText3": "Explore fabric",
+      "buttonText4": "Clear search",
+      "description4": "Fabric collection",
+      "detailLabel": "Key qualities"
+    },
+    "BuildYourOrder": {
+      "buttonText": "✓"
+    },
+    "SiteHeader": {
+      "buttonText": "Get a Quote",
+      "buttonText3": "Get a Quote"
+    },
+    "SiteFooter": {
+      "description3": "© 2026 Ganesh Garments. All rights reserved.",
+      "description4": "Where Quality Meets Calling."
+    },
+    "productsPage": {
+      "description3": "Your colors. Your identity.",
+      "description4": "Our craft."
+    },
+    "ourWorkPage": {
+      "buttonText4": "Plan your",
+      "buttonText5": "order"
+    }
+  },
+  "designMedia": {
+    "HeroHeader": {
+      "image": {
+        "src": "/images/background/ganesh_hero_section_v2_bg.jpeg",
+        "alt": ""
+      }
+    },
+    "SiteHeader": {
+      "image": {
+        "src": "/ganesh_logo_full.png",
+        "alt": ""
+      }
+    },
+    "customizePage": {
+      "image": {
+        "src": "/images/background/ganesh-hero-bg-v3.png",
+        "alt": "A close look at the tailoring work behind a garment."
+      }
+    },
+    "productionPage": {
+      "image": {
+        "src": "/images/background/ganesh-hero-bg-v3.png",
+        "alt": "Hands guiding red fabric through a sewing machine."
+      }
+    }
+  },
+  "featuredProducts": [
+    {
+      "id": "full-sublimation-jersey",
+      "name": "Full Sublimation Jersey",
+      "tagline": "Built to move. Made to represent.",
+      "description": "Bring your team’s identity into every detail. A breathable polyester jersey pairs a durable performance fabric with full-garment sublimation, carrying your colors, logos, player names and numbers into a coordinated kit for training, game days and events.",
+      "fabric": "Polydex 200 (100% Polyester)",
+      "bestFor": "Sports teams, events, clubs, institutions",
+      "customization": "Team logos, player names, numbers, colors, sponsors",
+      "category": "Sportswear",
+      "orderBuilderProduct": "Full Sublimation Jersey",
+      "image": {
+        "src": "/images/products/full-sublimation-jersey.webp",
+        "alt": "Athlete standing on a football field in a blue sports jersey."
+      },
+      "poster": {
+        "src": "/images/products/full-sublimation-jersey.webp",
+        "alt": "Athlete standing on a football field in a blue sports jersey."
+      },
+      "video": {
+        "kind": "video",
+        "src": "/videos/featured/jersey.mp4",
+        "alt": "Full Sublimation Jersey video preview",
+        "captions": ""
+      },
+      "qualities": [
+        "Polydex 200",
+        "Breathable",
+        "Full Sublimation",
+        "Customizable"
+      ],
+      "gallery": [
+        {
+          "id": "full-sublimation-jersey-gallery-1",
+          "label": "Front View",
+          "image": {
+            "src": "/images/products/full-sublimation-jersey.webp",
+            "alt": "Illustrative front view of an athlete wearing a blue jersey."
+          }
+        },
+        {
+          "id": "full-sublimation-jersey-gallery-2",
+          "label": "Back View",
+          "image": {
+            "src": "/images/featured/jersey-back.webp",
+            "alt": "Illustrative rear view of a blue numbered soccer jersey."
+          }
+        },
+        {
+          "id": "full-sublimation-jersey-gallery-3",
+          "label": "Fabric Texture",
+          "image": {
+            "src": "/images/fabrics/polydex.webp",
+            "alt": "Illustrative charcoal knit textile study for polyester sportswear."
+          }
+        },
+        {
+          "id": "full-sublimation-jersey-gallery-4",
+          "label": "Actual Output",
+          "image": {
+            "src": "/images/featured/jersey-output.webp",
+            "alt": "Illustrative blue soccer kit worn on a football field, not Ganesh output."
+          }
+        }
+      ],
+      "order": 0,
+      "active": true
+    },
+    {
+      "id": "customized-polo",
+      "name": "Customized Polo",
+      "tagline": "An everyday fit. A shared identity.",
+      "description": "A smart, comfortable polo for the people behind your organization. Choose a structured Lacoste knit or a lighter Aircool option, then bring together your logo, collar, sleeve and panel colors for a consistent finish across staff uniforms and event wear.",
+      "fabric": "Aircool / Lacoste / performance options",
+      "bestFor": "Staff, organizations, events",
+      "customization": "Collar, sleeve, logo, panels",
+      "category": "Corporate",
+      "orderBuilderProduct": "Customized Polo",
+      "image": {
+        "src": "/images/featured/polo-front.webp",
+        "alt": "Illustrative red polo worn by a model."
+      },
+      "poster": {
+        "src": "/images/featured/polo-front.webp",
+        "alt": "Illustrative red polo worn by a model."
+      },
+      "video": {
+        "kind": "video",
+        "src": "/videos/featured/polo.mp4",
+        "alt": "Customized Polo video preview",
+        "captions": ""
+      },
+      "qualities": [
+        "Lacoste / Aircool",
+        "Structured Knit",
+        "Logo-ready",
+        "Customizable"
+      ],
+      "gallery": [
+        {
+          "id": "customized-polo-gallery-1",
+          "label": "Front View",
+          "image": {
+            "src": "/images/featured/polo-front.webp",
+            "alt": "Illustrative front view of a man wearing a red polo."
+          }
+        },
+        {
+          "id": "customized-polo-gallery-2",
+          "label": "Back View",
+          "image": {
+            "src": "/images/featured/polo-back.webp",
+            "alt": "Illustrative rear view of a red branded polo at an outdoor event."
+          }
+        },
+        {
+          "id": "customized-polo-gallery-3",
+          "label": "Fabric Texture",
+          "image": {
+            "src": "/images/fabrics/lacoste.webp",
+            "alt": "Illustrative grey structured knit textile study for polo fabric."
+          }
+        },
+        {
+          "id": "customized-polo-gallery-4",
+          "label": "Actual Output",
+          "image": {
+            "src": "/images/featured/polo-output.webp",
+            "alt": "Illustrative red polo worn against a blue backdrop, not Ganesh output."
+          }
+        }
+      ],
+      "order": 1,
+      "active": true
+    },
+    {
+      "id": "custom-t-shirt",
+      "name": "Custom T-Shirt",
+      "tagline": "Your idea. Worn together.",
+      "description": "Start with a reliable everyday shirt and make it your own. Cotton, polyester and performance fabric options let you shape the feel around your group, while custom artwork, print placement, fit and colors bring a considered finish to community events, merchandise and campaigns.",
+      "fabric": "Cotton / polyester / performance options",
+      "bestFor": "Events, merch, organizations",
+      "customization": "Print, fit, color, neck style",
+      "category": "Custom",
+      "orderBuilderProduct": "Custom T-Shirt",
+      "image": {
+        "src": "/images/products/custom-t-shirt.webp",
+        "alt": "Graphic white t-shirt displayed on a clothing rack."
+      },
+      "poster": {
+        "src": "/images/products/custom-t-shirt.webp",
+        "alt": "Graphic white t-shirt displayed on a clothing rack."
+      },
+      "video": {
+        "kind": "video",
+        "src": "/videos/featured/t-shirt.mp4",
+        "alt": "Custom T-Shirt video preview",
+        "captions": ""
+      },
+      "qualities": [
+        "Fabric Choices",
+        "Everyday Wear",
+        "Custom Artwork",
+        "Flexible Fit"
+      ],
+      "gallery": [
+        {
+          "id": "custom-t-shirt-gallery-1",
+          "label": "Front View",
+          "image": {
+            "src": "/images/products/custom-t-shirt.webp",
+            "alt": "Illustrative front view of a white printed T-shirt on a rack."
+          }
+        },
+        {
+          "id": "custom-t-shirt-gallery-2",
+          "label": "Back View",
+          "image": {
+            "src": "/images/featured/t-shirt-back.webp",
+            "alt": "Illustrative back view of a man in a white T-shirt."
+          }
+        },
+        {
+          "id": "custom-t-shirt-gallery-3",
+          "label": "Fabric Texture",
+          "image": {
+            "src": "/images/fabrics/aircool.webp",
+            "alt": "Illustrative light perforated textile study for a performance T-shirt option."
+          }
+        },
+        {
+          "id": "custom-t-shirt-gallery-4",
+          "label": "Actual Output",
+          "image": {
+            "src": "/images/featured/t-shirt-output.webp",
+            "alt": "Illustrative white T-shirt worn outdoors, not Ganesh output."
+          }
+        }
+      ],
+      "order": 2,
+      "active": true
+    }
+  ],
+  "global": {
+    "businessName": "Ganesh Garments",
+    "tagline": "Made with purpose. Crafted to last.",
+    "establishedYear": "2022",
+    "location": "GMA, Cavite",
+    "phone": "",
+    "email": "",
+    "facebook": "",
+    "address": "Portal Mall, GMA, Cavite",
+    "maps": "https://www.google.com/maps/search/?api=1&query=Portal+Mall+GMA+Cavite",
+    "hours": "",
+    "quoteLabel": "Get a Quote",
+    "logo": {
+      "src": "/ganesh_logo_full.png",
+      "alt": "Ganesh Garments"
+    },
+    "favicon": {
+      "src": "/ganesh.svg",
+      "alt": "Ganesh Garments mark"
+    },
+    "socialPreview": {
+      "src": "/images/background/ganesh_hero_section_v2_bg.jpeg",
+      "alt": "Ganesh Garments workshop"
+    },
+    "nav": [
+      {
+        "label": "Products",
+        "href": "/products",
+        "external": false
+      },
+      {
+        "label": "Customize",
+        "href": "/customize",
+        "external": false
+      },
+      {
+        "label": "Our Work",
+        "href": "/our-work",
+        "external": false
+      },
+      {
+        "label": "Production",
+        "href": "/production",
+        "external": false
+      }
+    ],
+    "seo": {
+      "title": "Ganesh Garments",
+      "description": "Custom uniforms, corporate wear, sportswear and apparel made with hands-on craftsmanship."
+    }
+  },
+  "pages": {
+    "home": {
+      "hero": {
+        "eyebrow": "Est. 2022 · GMA, Cavite",
+        "headlinePrefix": "Made with",
+        "headlineEmphasis": "purpose",
+        "headlineSecondLine": "Crafted to last.",
+        "copy": "School uniforms, corporate wear, customized apparel and sportswear — designed around your identity and produced with hands-on craftsmanship.",
+        "primary": {
+          "label": "Explore Products",
+          "href": "/products",
+          "external": false
+        },
+        "secondary": {
+          "label": "Start a Custom Order",
+          "href": "#customize",
+          "external": false
+        },
+        "image": {
+          "src": "/images/background/ganesh_hero_section_v2_bg.jpeg",
+          "alt": ""
+        }
+      },
+      "brandStatement": {
+        "kicker": "Ganesh Garments",
+        "headlinePrefix": "Where",
+        "headlineTarget": "quality",
+        "headlineSuffix": "meets calling.",
+        "copy": "We create uniforms, sportswear and custom apparel designed around your identity, your use, and the people who wear them — produced with hands-on craftsmanship."
+      },
+      "whatWeMake": {
+        "kicker": "What We Make",
+        "heading": "Made by Ganesh.",
+        "copy": "Uniforms, corporate wear, sportswear and custom pieces made around your team, use and identity."
+      },
+      "fabrics": {
+        "kicker": "Fabric explorer",
+        "heading": "Choose how it should feel.",
+        "copy": ""
+      },
+      "production": {
+        "kicker": "FROM THREAD TO FINISHED GARMENT",
+        "heading": "See how your order moves.",
+        "copy": "The same thread that starts at the sewing machine continues through the production journey."
+      },
+      "work": {
+        "kicker": "Our work",
+        "heading": "Stitched for real communities.",
+        "copy": "Explore the kinds of identities we build for schools, teams, organizations and events."
+      },
+      "order": {
+        "kicker": "Interactive quotation builder",
+        "heading": "Build your order.",
+        "copy": "Use this to prepare the details Ganesh needs: product, fabric, quantity, customization and deadline. The preview updates instantly."
+      },
+      "values": {
+        "kicker": "Brand values",
+        "heading": "The Ganesh standard.",
+        "copy": ""
+      },
+      "help": {
+        "kicker": "Helpful before ordering",
+        "heading": "Size it. Ask it. Send it.",
+        "copy": ""
+      },
+      "footer": {
+        "kicker": "Ready when you are",
+        "heading": "Have something in mind?",
+        "copy": "Send your design, quantity and deadline. Ganesh can turn the idea into a clear quotation and production plan.",
+        "primary": {
+          "label": "Message us for quotation",
+          "href": "/customize#customize",
+          "external": false
+        },
+        "secondary": {
+          "label": "Get directions",
+          "href": "https://www.google.com/maps/search/?api=1&query=Portal+Mall+GMA+Cavite",
+          "external": true
+        },
+        "legal": "© 2026 Ganesh Garments. All rights reserved.\nWhere Quality Meets Calling.",
+        "details": [
+          {
+            "label": "Visit Ganesh Garments",
+            "value": "Portal Mall, GMA, Cavite",
+            "source": "address"
+          },
+          {
+            "label": "Established",
+            "value": "2022",
+            "source": "establishedYear"
+          },
+          {
+            "label": "What to send",
+            "value": "Design + quantity + deadline"
+          }
+        ]
+      }
+    },
+    "products": {
+      "heroEyebrow": "What we make",
+      "heroTitleFirst": "Made for",
+      "heroTitleSecond": "your people.",
+      "heroLead": "The everyday uniform. The game-day jersey. The shirt that brings everyone together. Find your starting point, then make it yours.",
+      "heroCaption": "Your colors. Your identity.\nOur craft.",
+      "collectionKicker": "The collection",
+      "collectionHeadingFirst": "A place",
+      "collectionHeadingSecond": "to begin.",
+      "fabricLink": "Get to know the fabrics",
+      "metaTitle": "Products | Ganesh Garments",
+      "metaDescription": "Explore custom school uniforms, polos, jerseys, t-shirts, corporate uniforms, singlets, jackets and merchandise from Ganesh Garments in Cavite.",
+      "exploreCollection": "Explore the collection",
+      "buildOrder": "Build an order",
+      "specialRequest": "Plan a special request",
+      "nextHeading": "A garment is only the beginning.",
+      "nextCopy": "See how uniforms, teamwear and merchandise come together around the people who wear them.",
+      "nextAction": "Explore our work"
+    },
+    "ourWork": {
+      "heroEyebrow": "Our work",
+      "heroTitleFirst": "Worn together.",
+      "heroTitleSecond": "Made to mean more.",
+      "heroLead": "Behind every garment is a group of people. Explore the uniforms, teamwear and shared identities at the heart of what Ganesh makes.",
+      "heroCaptionFirst": "For the everyday.",
+      "heroCaptionSecond": "For the moments that matter.",
+      "metaTitle": "Our Work | Ganesh Garments",
+      "metaDescription": "Explore apparel directions for schools, companies, churches, sports teams and events, from coordinated uniforms to custom teamwear and merchandise.",
+      "exploreWork": "Explore the work",
+      "focusLabel": "What brings it together",
+      "briefLabel": "A good place to start",
+      "garmentsHeading": "Make it your own.",
+      "garmentsCopy": "Explore the garments behind this direction."
+    },
+    "production": {
+      "heroEyebrow": "The production journey",
+      "heroTitleFirst": "The making",
+      "heroTitleSecond": "of your order.",
+      "heroLead": "From the first artwork to the finished garment, follow the steps that bring your order together.",
+      "heroCaption": "From thread to finished garment.",
+      "journeyKicker": "From design to delivery",
+      "journeyTitleFirst": "Eight stages.",
+      "journeyTitleSecond": "One finished order.",
+      "journeyCopy": "Artwork, fabric, construction and finishing. Each stage has its place in the making of your garment.",
+      "metaTitle": "Production | Ganesh Garments",
+      "metaDescription": "Follow the Ganesh Garments production journey from design and materials through cutting, printing, sewing, quality control, packing and delivery. Learn what to prepare for your order.",
+      "followJourney": "Follow the journey",
+      "journeyLink": "The journey",
+      "preparationLink": "Before production",
+      "questionsLink": "Planning your order",
+      "preparationKicker": "Before production",
+      "preparationTitleFirst": "A clear brief.",
+      "preparationTitleSecond": "A shared starting point.",
+      "preparationCopy": "Prepare your product, design, quantity, size breakdown, fabric preference and target deadline. Those details make quotation faster.",
+      "buildOrder": "Build your order",
+      "questionsKicker": "Planning your order",
+      "questionsTitleFirst": "A few things",
+      "questionsTitleSecond": "to know.",
+      "questionsCopy": "A little clarity on artwork, timing and quotation before you begin.",
+      "moreGuidance": "More ordering & sizing guidance"
+    },
+    "customize": {
+      "heroEyebrow": "Made your way",
+      "heroTitleFirst": "Your idea.",
+      "heroTitleSecond": "Every detail.",
+      "heroLead": "Start with the people you’re making it for. We’ll help you bring the garment, fabric and finishing details together.",
+      "heroCaption": "From the first idea to the final stitch.",
+      "metaTitle": "Customize | Ganesh Garments",
+      "metaDescription": "Build your custom apparel brief with Ganesh Garments. Choose a product and fabric, then add quantity, customization, sizing and your target deadline.",
+      "buildOrder": "Build your order",
+      "helpLink": "Sizing & questions",
+      "preparationIdeaTitle": "Bring your idea.",
+      "preparationIdeaCopy": "Your logo, artwork or a reference, plus where you’d like it placed.",
+      "preparationGroupTitle": "Know your group.",
+      "preparationGroupCopy": "An estimated quantity and the sizes your school, team or organization needs.",
+      "preparationDateTitle": "Set the date.",
+      "preparationDateCopy": "Your target deadline, so Ganesh can review the production requirements."
+    }
+  },
+  "editorial": {
+    "labels": {
+      "header": {
+        "menu": "Menu",
+        "support": "Support",
+        "supportHeading": "How can we help?",
+        "trackOrder": "Track Order",
+        "visit": "Visit Us"
+      },
+      "help": {
+        "sizeGuide": "Quick size guide",
+        "frequentlyAsked": "Frequently asked"
+      },
+      "sections": {
+        "exploreWork": "Explore all our work",
+        "exploreProduction": "Explore production",
+        "showing": "Showing",
+        "fabricDisclaimer": "as an illustrative material reference.",
+        "workDisclaimer": "illustrative portfolio directions."
+      },
+      "productDialog": {
+        "view": "View product",
+        "fabric": "Fabric",
+        "bestFor": "Best for",
+        "customization": "Customization",
+        "customize": "Customize this",
+        "specialRequest": "Plan a special request"
+      },
+      "builder": {
+        "productHeading": "What are we making?",
+        "productLabel": "Product",
+        "chooseProduct": "Choose a product",
+        "materialHeading": "Choose the material.",
+        "materialLabel": "Material",
+        "chooseFabric": "Choose a fabric",
+        "detailsHeading": "Order details.",
+        "detailsLabel": "Specifications",
+        "quantity": "Quantity",
+        "customization": "Customization",
+        "deadline": "Target deadline",
+        "sizing": "Sizing",
+        "noteHeading": "Project note.",
+        "noteLabel": "Context",
+        "notePrompt": "What should Ganesh know?",
+        "notePlaceholder": "School / organization / event / design note",
+        "summaryKicker": "Your choices so far",
+        "summaryHeading": "Your order",
+        "fabric": "Fabric",
+        "projectNote": "Project note",
+        "prepareQuote": "Prepare quote"
+      }
+    },
+    "images": {
+      "productionHero": {
+        "src": "/images/background/ganesh-hero-bg-v3.png",
+        "alt": "Hands guiding red fabric through a sewing machine."
+      },
+      "customizeHero": {
+        "src": "/images/background/ganesh-hero-bg-v3.png",
+        "alt": "A close look at the tailoring work behind a garment."
+      }
+    },
+    "productionPreparation": [
+      {
+        "id": "preparation-1",
+        "title": "Garment & fabric",
+        "description": "Choose your product and share your fabric preference. If you’re still deciding, explore the available materials before preparing your brief.",
+        "href": "/products#fabrics",
+        "link": "Explore the fabrics",
+        "order": 0,
+        "active": true
+      },
+      {
+        "id": "preparation-2",
+        "title": "Design & customization",
+        "description": "Bring your design or reference, with the logos, print details or embroidery you have in mind. Include names and numbers for personalized teamwear.",
+        "href": "",
+        "link": "",
+        "order": 1,
+        "active": true
+      },
+      {
+        "id": "preparation-3",
+        "title": "Quantity & sizes",
+        "description": "Prepare a quantity for each size. For team orders, collect names, numbers and sizes in one final list, and check that it matches the total quantity.",
+        "href": "/customize#help",
+        "link": "See the sizing guidance",
+        "order": 2,
+        "active": true
+      },
+      {
+        "id": "preparation-4",
+        "title": "Your target deadline",
+        "description": "Include your required completion date with your garment and quantity details so the team can review production feasibility.",
+        "href": "",
+        "link": "",
+        "order": 3,
+        "active": true
+      }
+    ],
+    "productionQuestions": [
+      {
+        "id": "own-design",
+        "question": "Can I submit my own design?",
+        "answer": "Yes. Send the design together with quantity, deadline and garment requirements so the team can review production feasibility.",
+        "order": 0,
+        "active": true
+      },
+      {
+        "id": "rush-orders",
+        "question": "Do you accept rush orders?",
+        "answer": "Rush feasibility depends on the current production load, product type, quantity and required completion date.",
+        "order": 1,
+        "active": true
+      },
+      {
+        "id": "final-price",
+        "question": "When is the final price confirmed?",
+        "answer": "Final price is confirmed by Ganesh after design, material and production requirements are checked.",
+        "order": 2,
+        "active": true
+      }
+    ]
+  },
+  "products": [
+    {
+      "id": "school-uniform-set",
+      "slug": "school-uniform-set",
+      "name": "School Uniform Set",
+      "shortDescription": "Clean, durable and repeat-order ready.",
+      "details": "Plan a coordinated uniform around your school’s identity, with a size breakdown for the whole group and details to carry into repeat orders.",
+      "purpose": "For school days & student groups",
+      "category": "Uniforms",
+      "fabric": "School-approved fabric options",
+      "bestFor": "Daily school wear",
+      "customization": "Sizing, trims, embroidery/print",
+      "image": {
+        "src": "/images/products/school-uniform-set.webp",
+        "alt": "Students wearing coordinated school uniforms outdoors."
+      },
+      "orderBuilderProduct": "School Uniform",
+      "order": 0,
+      "active": true
+    },
+    {
+      "id": "customized-polo",
+      "slug": "customized-polo",
+      "name": "Customized Polo",
+      "shortDescription": "Professional, branded and configurable.",
+      "details": "Start with your colors and logo. Bring together the fabric, branding placement and sizing that suit the people wearing it.",
+      "purpose": "For staff, organizations & everyday wear",
+      "category": "Corporate",
+      "fabric": "Aircool / Lacoste / performance options",
+      "bestFor": "Staff, organizations, events",
+      "customization": "Collar, sleeve, logo, panels",
+      "image": {
+        "src": "/images/products/customized-polo.webp",
+        "alt": "Man wearing a blue polo shirt outdoors."
+      },
+      "orderBuilderProduct": "Customized Polo",
+      "order": 1,
+      "active": true
+    },
+    {
+      "id": "full-sublimation-jersey",
+      "slug": "full-sublimation-jersey",
+      "name": "Full Sublimation Jersey",
+      "shortDescription": "Team-ready graphics built into the garment.",
+      "details": "Build a team identity with full-garment graphics. Include your colors, artwork, player names and numbers in the project brief.",
+      "purpose": "For teams, clubs & game days",
+      "category": "Sportswear",
+      "fabric": "Performance polyester options",
+      "bestFor": "Basketball, volleyball, events",
+      "customization": "Full design, names, numbers, cuts",
+      "image": {
+        "src": "/images/products/full-sublimation-jersey.webp",
+        "alt": "Athlete standing on a football field in a blue sports jersey."
+      },
+      "orderBuilderProduct": "Full Sublimation Jersey",
+      "order": 2,
+      "active": true
+    },
+    {
+      "id": "custom-t-shirt",
+      "slug": "custom-t-shirt",
+      "name": "Custom T-Shirt",
+      "shortDescription": "Simple base, limitless brand direction.",
+      "details": "A straightforward starting point for your idea. Share the design, print placement and quantity to shape a shirt around your group.",
+      "purpose": "For communities, crews & campaigns",
+      "category": "Custom",
+      "fabric": "Cotton / polyester / performance options",
+      "bestFor": "Events, merch, organizations",
+      "customization": "Print, fit, color, neck style",
+      "image": {
+        "src": "/images/products/custom-t-shirt.webp",
+        "alt": "Graphic white t-shirt displayed on a clothing rack."
+      },
+      "orderBuilderProduct": "Custom T-Shirt",
+      "order": 3,
+      "active": true
+    },
+    {
+      "id": "corporate-uniform",
+      "slug": "corporate-uniform",
+      "name": "Corporate Uniform",
+      "shortDescription": "Consistent identity across your team.",
+      "details": "Give your team a consistent appearance. Describe the workday, roles and branding requirements so the garment fits its purpose.",
+      "purpose": "For workplaces & frontline teams",
+      "category": "Corporate",
+      "fabric": "Uniform suiting and easy-care options",
+      "bestFor": "Office and front-line staff",
+      "customization": "Cut, logo, color blocking, sizing",
+      "image": {
+        "src": "/images/products/corporate-uniform.webp",
+        "alt": "Team members wearing coordinated black work shirts."
+      },
+      "orderBuilderProduct": "Corporate Uniform",
+      "order": 4,
+      "active": true
+    },
+    {
+      "id": "running-singlet",
+      "slug": "running-singlet",
+      "name": "Running Singlet",
+      "shortDescription": "Lightweight and made for movement.",
+      "details": "Keep movement at the center of the brief. Bring your club or event artwork, sizing list and target date to the conversation.",
+      "purpose": "For running clubs & race events",
+      "category": "Sportswear",
+      "fabric": "Lightweight performance fabric",
+      "bestFor": "Runs, clubs, race events",
+      "customization": "Full sublimation, names, sponsor marks",
+      "image": {
+        "src": "/images/products/running-singlet.webp",
+        "alt": "Runner wearing a yellow singlet during a road race."
+      },
+      "orderBuilderProduct": "Running Singlet",
+      "order": 5,
+      "active": true
+    },
+    {
+      "id": "custom-jacket",
+      "slug": "custom-jacket",
+      "name": "Custom Jacket",
+      "shortDescription": "Layered, branded and built around your use.",
+      "details": "Take your identity into an extra layer. Outline your preferred look, logo placement and any panel or pattern ideas for review.",
+      "purpose": "For team layers & organization wear",
+      "category": "Custom",
+      "fabric": "Performance and outerwear options",
+      "bestFor": "Teams, staff, organizations",
+      "customization": "Panels, lining, pockets, logo",
+      "image": {
+        "src": "/images/products/custom-jacket.webp",
+        "alt": "Assorted jackets arranged on a clothing rack."
+      },
+      "orderBuilderProduct": "Custom Jacket",
+      "order": 6,
+      "active": true
+    },
+    {
+      "id": "merchandise-specials",
+      "slug": "merchandise-specials",
+      "name": "Merchandise & Specials",
+      "shortDescription": "For campaigns, communities and launches.",
+      "details": "Have something beyond the usual uniform in mind? Describe the item and intended use in your project note so Ganesh can review the possibilities.",
+      "purpose": "For launches, gatherings & special ideas",
+      "category": "Custom",
+      "fabric": "Depends on product",
+      "bestFor": "Campaigns, events, giveaways",
+      "customization": "Artwork, packaging, product mix",
+      "image": {
+        "src": "/images/products/merchandise-specials.webp",
+        "alt": "Colorful t-shirts arranged on a clothing rack."
+      },
+      "order": 7,
+      "active": true
+    }
+  ],
+  "fabrics": [
+    {
+      "id": "aircool",
+      "slug": "aircool",
+      "name": "Aircool",
+      "description": "A breathable performance option suited to active uniforms, polos and sportswear where airflow and comfort matter.",
+      "qualities": [
+        "Breathable",
+        "Active wear",
+        "Lightweight"
+      ],
+      "shortDescription": "Breathable and lightweight",
+      "benefits": [
+        "Breathable",
+        "Lightweight"
+      ],
+      "recommendedUses": [
+        "Active uniforms",
+        "Polos",
+        "Sportswear"
+      ],
+      "image": {
+        "src": "/images/fabrics/aircool.webp",
+        "alt": "Illustrative close-up of a light perforated performance fabric."
+      },
+      "order": 0,
+      "active": true
+    },
+    {
+      "id": "lacoste",
+      "slug": "lacoste",
+      "name": "Lacoste",
+      "description": "A structured knit look commonly suited to polos and smart casual uniforms that need a more premium hand feel.",
+      "qualities": [
+        "Structured",
+        "Polo-ready",
+        "Smart casual"
+      ],
+      "shortDescription": "Structured knit with a premium feel",
+      "benefits": [
+        "Structured knit",
+        "Premium hand feel"
+      ],
+      "recommendedUses": [
+        "Polos",
+        "Smart casual uniforms"
+      ],
+      "image": {
+        "src": "/images/fabrics/lacoste.webp",
+        "alt": "Illustrative close-up of a structured grey knit fabric."
+      },
+      "order": 1,
+      "active": true
+    },
+    {
+      "id": "polydex",
+      "slug": "polydex",
+      "name": "Polydex",
+      "description": "A versatile polyester option for sublimation and customized sports or event garments where print clarity matters.",
+      "qualities": [
+        "Sublimation",
+        "Durable",
+        "Versatile"
+      ],
+      "shortDescription": "Versatile polyester for clear prints",
+      "benefits": [
+        "Durable",
+        "Versatile",
+        "Suited to sublimation"
+      ],
+      "recommendedUses": [
+        "Customized sportswear",
+        "Event garments"
+      ],
+      "image": {
+        "src": "/images/fabrics/polydex.webp",
+        "alt": "Illustrative close-up of a dense charcoal polyester knit."
+      },
+      "order": 2,
+      "active": true
+    },
+    {
+      "id": "drifit",
+      "slug": "drifit",
+      "name": "Drifit",
+      "description": "A performance-oriented fabric direction designed for active use, helping garments feel lighter during movement.",
+      "qualities": [
+        "Performance",
+        "Active",
+        "Quick-dry feel"
+      ],
+      "shortDescription": "Light performance fabric for movement",
+      "benefits": [
+        "Performance-oriented",
+        "Light feel",
+        "Quick-dry feel"
+      ],
+      "recommendedUses": [
+        "Activewear"
+      ],
+      "image": {
+        "src": "/images/fabrics/drifit.webp",
+        "alt": "Illustrative close-up of a dark technical knit fabric."
+      },
+      "order": 3,
+      "active": true
+    },
+    {
+      "id": "microshine",
+      "slug": "microshine",
+      "name": "Microshine",
+      "description": "A smooth synthetic surface with a subtle sheen, useful where a cleaner technical appearance is preferred.",
+      "qualities": [
+        "Smooth",
+        "Technical look",
+        "Light sheen"
+      ],
+      "shortDescription": "Smooth surface with a subtle sheen",
+      "benefits": [
+        "Smooth",
+        "Light sheen",
+        "Technical appearance"
+      ],
+      "recommendedUses": [
+        "Technical apparel"
+      ],
+      "image": {
+        "src": "/images/fabrics/microshine.webp",
+        "alt": "Illustrative close-up of a smooth pink fabric with a subtle sheen."
+      },
+      "order": 4,
+      "active": true
+    }
+  ],
+  "productionSteps": [
+    {
+      "id": "design",
+      "slug": "design",
+      "title": "Design",
+      "focus": "Artwork and specification",
+      "description": "We refine your artwork and confirm every production specification.",
+      "order": 0,
+      "active": true
+    },
+    {
+      "id": "materials",
+      "slug": "materials",
+      "title": "Materials",
+      "focus": "Fabric and trims",
+      "description": "We source and prepare the right fabric, trims, and components.",
+      "order": 1,
+      "active": true
+    },
+    {
+      "id": "cutting",
+      "slug": "cutting",
+      "title": "Cutting",
+      "focus": "Prepared by size and pattern",
+      "description": "Patterns are measured and cut accurately for every required size.",
+      "order": 2,
+      "active": true
+    },
+    {
+      "id": "printing",
+      "slug": "printing",
+      "title": "Printing",
+      "focus": "Print / sublimation stage",
+      "description": "Graphics and colors are applied through the selected print process.",
+      "order": 3,
+      "active": true
+    },
+    {
+      "id": "sewing",
+      "slug": "sewing",
+      "title": "Sewing",
+      "focus": "Assembly and finishing",
+      "description": "Each panel is assembled, reinforced, and finished by our sewing team.",
+      "order": 4,
+      "active": true
+    },
+    {
+      "id": "quality-control",
+      "slug": "quality-control",
+      "title": "Quality Control",
+      "focus": "Inspection and correction",
+      "description": "Every garment is carefully inspected and corrected before packing.",
+      "order": 5,
+      "active": true
+    },
+    {
+      "id": "packing",
+      "slug": "packing",
+      "title": "Packing",
+      "focus": "Count and preparation",
+      "description": "Finished pieces are counted, organized, and prepared for dispatch.",
+      "order": 6,
+      "active": true
+    },
+    {
+      "id": "delivery",
+      "slug": "delivery",
+      "title": "Delivery",
+      "focus": "Pickup or dispatch",
+      "description": "Your completed order is arranged for pickup or scheduled dispatch.",
+      "order": 7,
+      "active": true
+    }
+  ],
+  "workCategories": [
+    {
+      "id": "schools",
+      "slug": "schools",
+      "label": "Schools",
+      "leadDescription": "Uniform identity across a full student group.",
+      "story": {
+        "heading": "A shared identity. Every school day.",
+        "description": "From the everyday uniform to organization and event wear, school apparel brings a whole community together. Start with a consistent look, then make room for every student’s fit.",
+        "focus": "A recognizable school identity, a clear size breakdown and details that can carry through to repeat orders.",
+        "brief": "School colors and crest, garment requirements, quantity per size and the date the uniforms are needed.",
+        "relatedProductIds": [
+          "school-uniform-set",
+          "custom-t-shirt"
+        ]
+      },
+      "tiles": [
+        {
+          "id": "schools-1",
+          "title": "School Program",
+          "description": "Uniform identity across a full student group.",
+          "image": {
+            "src": "/images/work/schools-01.webp",
+            "alt": "Students wearing school uniforms together in a classroom."
+          },
+          "order": 0,
+          "active": true
+        },
+        {
+          "id": "schools-2",
+          "title": "Team Apparel",
+          "description": "Custom identity and sizing.",
+          "image": {
+            "src": "/images/work/schools-02.webp",
+            "alt": "Students in school uniform taking part in an outdoor activity."
+          },
+          "order": 1,
+          "active": true
+        },
+        {
+          "id": "schools-3",
+          "title": "Organization Wear",
+          "description": "Consistent and presentable.",
+          "image": {
+            "src": "/images/work/schools-03.webp",
+            "alt": "Teenage students in uniform standing in a school corridor."
+          },
+          "order": 2,
+          "active": true
+        },
+        {
+          "id": "schools-4",
+          "title": "Event Merchandise",
+          "description": "Designed for campaigns and moments.",
+          "image": {
+            "src": "/images/work/schools-04.webp",
+            "alt": "Students in uniform working together in a classroom."
+          },
+          "order": 3,
+          "active": true
+        },
+        {
+          "id": "schools-5",
+          "title": "Uniform Repeat Orders",
+          "description": "Easy to reproduce and manage.",
+          "image": {
+            "src": "/images/work/schools-05.webp",
+            "alt": "Schoolchildren in uniform standing outside."
+          },
+          "order": 4,
+          "active": true
+        }
+      ],
+      "order": 0,
+      "active": true
+    },
+    {
+      "id": "companies",
+      "slug": "companies",
+      "label": "Companies",
+      "leadDescription": "Polos and uniforms for one consistent team.",
+      "story": {
+        "heading": "Different roles. One team.",
+        "description": "A staff polo, a frontline uniform or merchandise for a launch: each has a different job to do. A considered fabric and a consistent brand treatment connect them to the same company.",
+        "focus": "A coordinated appearance that considers the working day, each team’s role and future staff orders.",
+        "brief": "Your logo, brand colors, departments, size list and where you want the branding to appear.",
+        "relatedProductIds": [
+          "customized-polo",
+          "corporate-uniform"
+        ]
+      },
+      "tiles": [
+        {
+          "id": "companies-1",
+          "title": "Corporate Staff Program",
+          "description": "Polos and uniforms for one consistent team.",
+          "image": {
+            "src": "/images/work/companies-01.webp",
+            "alt": "Colleagues collaborating in a modern office."
+          },
+          "order": 0,
+          "active": true
+        },
+        {
+          "id": "companies-2",
+          "title": "Staff Polo",
+          "description": "Custom identity and sizing.",
+          "image": {
+            "src": "/images/work/companies-02.webp",
+            "alt": "Professionals discussing a project around a table."
+          },
+          "order": 1,
+          "active": true
+        },
+        {
+          "id": "companies-3",
+          "title": "Frontline Uniform",
+          "description": "Consistent and presentable.",
+          "image": {
+            "src": "/images/work/companies-03.webp",
+            "alt": "A team working together in a bright office."
+          },
+          "order": 2,
+          "active": true
+        },
+        {
+          "id": "companies-4",
+          "title": "Launch Merch",
+          "description": "Designed for campaigns and moments.",
+          "image": {
+            "src": "/images/work/companies-04.webp",
+            "alt": "Colleagues visible through a modern office window."
+          },
+          "order": 3,
+          "active": true
+        },
+        {
+          "id": "companies-5",
+          "title": "Repeat Staff Orders",
+          "description": "Easy to reproduce and manage.",
+          "image": {
+            "src": "/images/work/companies-05.webp",
+            "alt": "A group of professionals collaborating during a meeting."
+          },
+          "order": 4,
+          "active": true
+        }
+      ],
+      "order": 1,
+      "active": true
+    },
+    {
+      "id": "churches",
+      "slug": "churches",
+      "label": "Churches",
+      "leadDescription": "Merchandise and garments for ministry and community.",
+      "story": {
+        "heading": "Something shared. Something to belong to.",
+        "description": "Ministry teams, volunteers and church communities wear their purpose together. A community shirt or volunteer polo can carry that identity from weekly gatherings to anniversaries and outreach.",
+        "focus": "A common visual identity across ages, groups and the different moments in community life.",
+        "brief": "Your ministry or event artwork, preferred garment, sizes across the group and gathering date.",
+        "relatedProductIds": [
+          "custom-t-shirt",
+          "customized-polo"
+        ]
+      },
+      "tiles": [
+        {
+          "id": "churches-1",
+          "title": "Church Community Apparel",
+          "description": "Merchandise and garments for ministry and community.",
+          "image": {
+            "src": "/images/work/churches-01.webp",
+            "alt": "Volunteers distributing supplies during a community outreach event."
+          },
+          "order": 0,
+          "active": true
+        },
+        {
+          "id": "churches-2",
+          "title": "Anniversary Jersey",
+          "description": "Custom identity and sizing.",
+          "image": {
+            "src": "/images/work/churches-02.webp",
+            "alt": "Young people gathered for a church service in coordinated uniforms."
+          },
+          "order": 1,
+          "active": true
+        },
+        {
+          "id": "churches-3",
+          "title": "Volunteer Polo",
+          "description": "Consistent and presentable.",
+          "image": {
+            "src": "/images/work/churches-03.webp",
+            "alt": "Volunteers sorting donations at a community table."
+          },
+          "order": 2,
+          "active": true
+        },
+        {
+          "id": "churches-4",
+          "title": "Event Tote",
+          "description": "Designed for campaigns and moments.",
+          "image": {
+            "src": "/images/work/churches-04.webp",
+            "alt": "Volunteers organizing donated clothes together."
+          },
+          "order": 3,
+          "active": true
+        },
+        {
+          "id": "churches-5",
+          "title": "Community Shirt",
+          "description": "Easy to reproduce and manage.",
+          "image": {
+            "src": "/images/work/churches-05.webp",
+            "alt": "A volunteer group organizing donated supplies indoors."
+          },
+          "order": 4,
+          "active": true
+        }
+      ],
+      "order": 2,
+      "active": true
+    },
+    {
+      "id": "sports",
+      "slug": "sports",
+      "label": "Sports Teams",
+      "leadDescription": "Performance apparel for teams and clubs.",
+      "story": {
+        "heading": "The team comes first. The details follow.",
+        "description": "The colors, the names, the number on the back. Teamwear turns individual players into a recognizable whole, with garment and fabric choices built around the way they move.",
+        "focus": "A connected team identity across game jerseys, club singlets, warm-up layers and supporter wear.",
+        "brief": "Team artwork and colors, a checked roster of names and numbers, quantities by size and your game or race date.",
+        "relatedProductIds": [
+          "full-sublimation-jersey",
+          "running-singlet"
+        ]
+      },
+      "tiles": [
+        {
+          "id": "sports-1",
+          "title": "Team Identity",
+          "description": "Performance apparel for teams and clubs.",
+          "image": {
+            "src": "/images/work/sports-01.webp",
+            "alt": "A basketball team wearing matching blue jerseys on a court."
+          },
+          "order": 0,
+          "active": true
+        },
+        {
+          "id": "sports-2",
+          "title": "Game Jersey",
+          "description": "Custom identity and sizing.",
+          "image": {
+            "src": "/images/work/sports-02.webp",
+            "alt": "A team in green jerseys standing together with their arms around each other."
+          },
+          "order": 1,
+          "active": true
+        },
+        {
+          "id": "sports-3",
+          "title": "Warm-up Top",
+          "description": "Consistent and presentable.",
+          "image": {
+            "src": "/images/work/sports-03.webp",
+            "alt": "Young football players in team jerseys on a field."
+          },
+          "order": 2,
+          "active": true
+        },
+        {
+          "id": "sports-4",
+          "title": "Club Singlet",
+          "description": "Designed for campaigns and moments.",
+          "image": {
+            "src": "/images/work/sports-04.webp",
+            "alt": "Players in basketball jerseys during an indoor game."
+          },
+          "order": 3,
+          "active": true
+        },
+        {
+          "id": "sports-5",
+          "title": "Supporter Merch",
+          "description": "Easy to reproduce and manage.",
+          "image": {
+            "src": "/images/work/sports-05.webp",
+            "alt": "A young football player wearing a green sports jersey."
+          },
+          "order": 4,
+          "active": true
+        }
+      ],
+      "order": 3,
+      "active": true
+    },
+    {
+      "id": "events",
+      "slug": "events",
+      "label": "Events",
+      "leadDescription": "Apparel and merchandise designed around a moment.",
+      "story": {
+        "heading": "Made for a moment. Kept beyond it.",
+        "description": "A crew shirt helps people find the team. Campaign apparel carries a message. Event merchandise gives a shared experience something tangible to take home.",
+        "focus": "A clear event identity, practical choices for the crew and a design that people want to keep wearing.",
+        "brief": "Your event artwork, the items you have in mind, quantities and the date everything needs to be ready.",
+        "relatedProductIds": [
+          "custom-t-shirt",
+          "merchandise-specials"
+        ]
+      },
+      "tiles": [
+        {
+          "id": "events-1",
+          "title": "Event Collection",
+          "description": "Apparel and merchandise designed around a moment.",
+          "image": {
+            "src": "/images/work/events-01.webp",
+            "alt": "Colorful t-shirts arranged on a clothing rack."
+          },
+          "order": 0,
+          "active": true
+        },
+        {
+          "id": "events-2",
+          "title": "Event Jersey",
+          "description": "Custom identity and sizing.",
+          "image": {
+            "src": "/images/work/events-02.webp",
+            "alt": "A person steaming a plain t-shirt on a clothing rack."
+          },
+          "order": 1,
+          "active": true
+        },
+        {
+          "id": "events-3",
+          "title": "Crew Shirt",
+          "description": "Consistent and presentable.",
+          "image": {
+            "src": "/images/work/events-03.webp",
+            "alt": "Plain black t-shirts hanging on a studio rack."
+          },
+          "order": 2,
+          "active": true
+        },
+        {
+          "id": "events-4",
+          "title": "Souvenir Tote",
+          "description": "Designed for campaigns and moments.",
+          "image": {
+            "src": "/images/work/events-04.webp",
+            "alt": "A blank white t-shirt displayed on a light surface."
+          },
+          "order": 3,
+          "active": true
+        },
+        {
+          "id": "events-5",
+          "title": "Campaign Shirt",
+          "description": "Easy to reproduce and manage.",
+          "image": {
+            "src": "/images/work/events-05.webp",
+            "alt": "A blank white t-shirt on a minimalist rack."
+          },
+          "order": 4,
+          "active": true
+        }
+      ],
+      "order": 4,
+      "active": true
+    }
+  ],
+  "brandValues": [
+    {
+      "id": "trusted",
+      "name": "Trusted",
+      "description": "Reliable communication, clear requirements and accountable work.",
+      "order": 0,
+      "active": true
+    },
+    {
+      "id": "bold",
+      "name": "Bold",
+      "description": "Garments that carry identity, color and purpose with confidence.",
+      "order": 1,
+      "active": true
+    },
+    {
+      "id": "crafted",
+      "name": "Crafted",
+      "description": "Attention from design and cutting through sewing and finishing.",
+      "order": 2,
+      "active": true
+    },
+    {
+      "id": "local",
+      "name": "Local",
+      "description": "Proudly serving schools, teams, businesses and communities from Cavite.",
+      "order": 3,
+      "active": true
+    }
+  ],
+  "sizeGuides": [
+    {
+      "id": "kids",
+      "label": "Kids",
+      "rows": [
+        {
+          "label": "Typical range",
+          "value": "6 · 8 · 10 · 12 · 14 · 16 · 18 · 20"
+        },
+        {
+          "label": "Best practice",
+          "value": "Confirm actual body measurements before bulk production"
+        },
+        {
+          "label": "Mixed order",
+          "value": "Allowed — submit quantity per size"
+        }
+      ],
+      "order": 0,
+      "active": true
+    },
+    {
+      "id": "adult",
+      "label": "Adult",
+      "rows": [
+        {
+          "label": "Typical range",
+          "value": "2XS · XS · S · M · L · XL · 2XL · 3XL · 4XL · 5XL"
+        },
+        {
+          "label": "Best practice",
+          "value": "Use the garment-specific chart before final approval"
+        },
+        {
+          "label": "Mixed order",
+          "value": "Allowed — submit quantity per size"
+        }
+      ],
+      "order": 1,
+      "active": true
+    },
+    {
+      "id": "team",
+      "label": "Team order",
+      "rows": [
+        {
+          "label": "Recommended",
+          "value": "Collect names / numbers / sizes in one final list"
+        },
+        {
+          "label": "Before printing",
+          "value": "Freeze spelling, jersey number and size"
+        },
+        {
+          "label": "Bulk check",
+          "value": "Confirm total quantity matches final roster"
+        }
+      ],
+      "order": 2,
+      "active": true
+    }
+  ],
+  "faqs": [
+    {
+      "id": "own-design",
+      "question": "Can I submit my own design?",
+      "answer": "Yes. Send the design together with quantity, deadline and garment requirements so the team can review production feasibility.",
+      "order": 0,
+      "active": true
+    },
+    {
+      "id": "rush-orders",
+      "question": "Do you accept rush orders?",
+      "answer": "Rush feasibility depends on the current production load, product type, quantity and required completion date.",
+      "order": 1,
+      "active": true
+    },
+    {
+      "id": "order-details",
+      "question": "What details should I prepare?",
+      "answer": "Prepare your product, design, quantity, size breakdown, fabric preference and target deadline.",
+      "order": 2,
+      "active": true
+    },
+    {
+      "id": "mixed-sizes",
+      "question": "Can orders use mixed sizes?",
+      "answer": "Yes. A size breakdown can be included in your quotation or order details.",
+      "order": 3,
+      "active": true
+    }
+  ],
+  "orderBuilder": {
+    "customizationOptions": [
+      "Logo / Basic Print",
+      "Full Sublimation",
+      "Embroidery / Logo",
+      "Custom Panels / Pattern"
+    ],
+    "sizingOptions": [
+      "Mixed sizes",
+      "Kids",
+      "Adult",
+      "Custom sizing list"
+    ],
+    "recommendedFabricLabel": "Standard / Recommended",
+    "defaultQuantity": "50",
+    "defaultProduct": "School Uniform",
+    "defaultFabric": "Standard / Recommended",
+    "defaultCustomization": "Logo / Basic Print",
+    "defaultSizing": "Mixed sizes"
+  },
+  "supportCopy": {
+    "heading": "Ganesh support",
+    "greeting": "Hi! How can we help you today?",
+    "notice": "Chat preview · Try a suggested question",
+    "thinkingLabel": "Preparing a sample reply",
+    "composerPlaceholder": "Chat input will be available soon",
+    "prompts": [
+      {
+        "label": "Track my order",
+        "reply": "Order tracking will be available here once the support system is connected."
+      },
+      {
+        "label": "Where is your location?",
+        "reply": "You'll be able to ask the assistant for our location and visiting information here."
+      },
+      {
+        "label": "What products do you offer?",
+        "reply": "Ganesh Garments offers custom apparel including uniforms, sportswear, jerseys, polos, shirts, and other made-to-order garments."
+      },
+      {
+        "label": "How can I request a quote?",
+        "reply": "The assistant will be able to guide customers through the quotation process once the support system is connected."
+      }
+    ]
+  }
+}

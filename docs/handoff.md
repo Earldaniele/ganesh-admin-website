@@ -1,5 +1,9 @@
 # CMS repair handoff — 2026-09-08
 
+## Current editor repair — 2026-10-09
+
+See `docs/EDITOR_REPAIR_REPORT.md`. Missing public preview/CMS integration is now connected to existing components. New fields are imported into draft v38; publication v35 is unchanged. Final admin/public builds and scoped checks pass. Invalid old credentials block authenticated save/reload, video upload and sidebar/panel checks until user sign-in. No password/account changes or live publish occurred; do not run historical live-publishing smoke scripts.
+
 Local MariaDB migration and seed are applied and tested. Public app is on localhost:3000, admin on localhost:3001. Read README_CMS.md for setup, safety boundaries, backup/rollback and verification. First-login credentials are only in the git-ignored .local-setup/admin-access.txt.
 
 Key fixes: pnpm/Windows dependency links; public hero blur crash; generated-build Tailwind scanning; current-draft preservation; Save & Publish saving unsaved edits; real settings and dashboard state; structured collection editor; bounded same-origin/authenticated writes; safe persistent media with private draft access; immediate protected revalidation.
@@ -25,3 +29,23 @@ Removed Export working draft from the Visual Editor, including the error-state a
 Migration 003_users_roles.sql applied using the existing local setup database administrator because ganesh_app correctly has no DDL permissions. Existing account-role backup: .local-setup/accounts-before-role-migration.json. Runtime credentials and database grants were unchanged.
 
 Verified: TypeScript, ESLint, production build, 18 unit tests, real MariaDB transaction tests with complete rollback, anonymous API rejection and cross-origin account-write rejection. In the authenticated browser, Users & Roles loads, required create-account/custom-role fields prevent blank submission, self role changes are disabled, there is no horizontal overflow at the current viewport, and the editor no longer shows Export working draft. No real account or role was created for testing.
+
+Fabric Explorer categories/Publics (2026-10-09): added optional fabricCategories and per-card categoryId with legacy one-category-per-fabric fallback. The visual editor manages separate empty categories, selected-category cards, details, uploads, reorder/removal, Apply/Cancel and undo/redo using existing draft/version/media APIs. Public FabricExplorer and CmsContent adapters in the sibling website render the new membership; edit actions only appear in the signed preview. No schema migration or draft/publication write was performed. Unit/schema round-trip tests cover empty categories, multiple-card membership and stored media references; authenticated MariaDB save/upload remains an owner verification item.
+
+Verification: all 27 unit tests passed, and admin/public TypeScript and changed-source lint passed. Headless Edge exercised the real components with fixture-only content/media APIs: Add Category, empty state, Add Public with picture/details, Apply, schema-validated Save Draft/reload, details modal, category isolation and 390px layout. The editor/category overlay interception was fixed. Mobile Home page width was 403px in a 374px frame for both baseline and edited fixtures; Fabrics itself fits and did not increase overflow. Live authenticated database persistence was not exercised. Temporary QA route was removed; scripts/check-fabric-editor.ts creates and cleans up its own fixture-only route.
+
+Final verification: both production builds passed (isolated .next-editor-build output); changed-source lint passed. The temporary QA route is absent from source and production routes.
+
+## Featured products editor — 2026-10-09
+
+Added a dedicated product selector, editable text, original-audio MP4 upload/player, multi-image gallery uploads, previews, captions/alt text, replacement/removal/reordering and direct Save Changes in the existing Visual Editor sidebar. Files use the existing media storage/MariaDB API; XHR reports upload progress and errors. MP4 limit is 32 MB; images 5 MB; galleries 1–30. Save Changes persists a private draft; existing Save & Publish updates the public site. Public player remounts on replacement, and gallery keys use IDs. No schema migration or dependency added.
+
+Verified: 27 tests, TypeScript, full admin lint and production build; actual local browser uploads, byte-for-byte MP4 preservation, byte ranges, gallery operations, text save/reload, public preview binding and mobile overflow. QA temporary account removed and original draft restored at a new version; publication unchanged. Uploaded QA media remain under normal retention. Reusable integration check: scripts/check-featured-editor.ts; screenshots/backups: .visual-qa/featured (ignored).
+
+## Whole-system verification — 2026-10-09
+
+Current audit, not a repair: see [SYSTEM_VERIFICATION_2026-10-09.md](SYSTEM_VERIFICATION_2026-10-09.md). Actual isolated MariaDB/browser tests confirm authentication, roles, draft saves/latest-state publication, real media and major public interactions. Whole-system readiness is not established: exposed CMS bindings, gallery crop/video description, CMS Home mobile overflow, structured publish Escape, local production uploaded-image optimization and full public lint have confirmed failures. Draft 42/publication 35 and active accounts/content/media remain unchanged; the older active publication lacks integration version 2 and the public loader uses fallback. Isolated content restored; test servers stopped. No application code/password/design changes. Next action: resolve documented failures, finish per-field/UI and deployed checks; active publication requires explicit authorization.
+
+## Current repair handoff — 2026-10-09
+
+Use SYSTEM_REPAIR_2026-10-09.md as current result and CMS_SOURCE_OF_TRUTH.md as the binding contract; historical audit above is preserved. Linked legacy/design copy reconciles only on deliberate edits and keeps untouched divergence. Gallery crop/video descriptions, scoped loopback image transport, Home overflow and structured publish Escape repaired. Normal public lint now passes after build. Active publication 35 retains fallback until owner reviews/authorizes a preserving candidate. Do not publish or migrate active content automatically. Planner/demo scope accepted; real quote/support/recovery/Notifications remain unavailable and disclosed. Ignored repair evidence contains private test state; do not commit credentials or snapshots. Follow remaining UNVERIFIED inventory/deployed/manual checks; no whole-system readiness claim.

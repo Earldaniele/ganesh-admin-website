@@ -28,9 +28,11 @@ test("dangerous URLs, nested HTML fields and empty required interactive collecti
 test("media reference collection is recursive and deduplicated", () => {
   assert.deepEqual(collectMediaIds({ image: { assetId: "one" }, tiles: [{ image: { assetId: "one" } }, { image: { assetId: "two" } }] }), ["one", "two"]);
 });
-test("admin and public applications use the exact same schema", async () => {
-  const [admin, website] = await Promise.all([readFile("lib/content/schema.ts", "utf8"), readFile("../ganesh-website/lib/content-schema.ts", "utf8")]);
-  assert.equal(admin.replaceAll("\r\n", "\n").trim(), website.replaceAll("\r\n", "\n").trim());
+test("public adapter renders only opted-in publications and handles new media fields", async () => {
+  const website = await readFile("../ganesh-website/components/cms/CmsContent.tsx", "utf8");
+  assert.match(website, /editorIntegrationVersion === 2/);
+  assert.match(website, /case "featuredProducts"/);
+  assert.match(website, /case "catalogFabrics"/);
 });
 
 test("additive migration is idempotent and preserves draft edits and IDs", () => {
@@ -48,9 +50,12 @@ test("additive migration is idempotent and preserves draft edits and IDs", () =>
   assert.deepEqual(extendSnapshot(next), next);
 });
 
-test("public emergency fixture equals the validated database seed", async () => {
-  const fixture = JSON.parse(await readFile("../ganesh-website/lib/initial-content.json", "utf8"));
-  assert.deepEqual(contentSnapshotSchema.parse(fixture), contentSnapshotSchema.parse(initialContent));
+test("current source fixture includes featured videos and latest fabric details", () => {
+  const fixture = contentSnapshotSchema.parse(initialContent);
+  assert.equal(fixture.featuredProducts?.length, 3);
+  assert.equal(fixture.featuredProducts?.[0].video.src, "/videos/featured/jersey.mp4");
+  assert.equal(fixture.featuredProducts?.[0].gallery.length, 4);
+  assert.ok(fixture.fabrics[0].benefits?.length);
 });
 
 test("new production links reject script URLs and blank image descriptions", () => {

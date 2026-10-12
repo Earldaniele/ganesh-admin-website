@@ -85,7 +85,7 @@ export function AdminShell({
           </div>
           <div className="page-header-actions">
             <span className="prototype-pill"><span /> Content CMS</span>
-            <button className="icon-button" type="button" aria-label="Notifications"><Icon name="activity" /></button>
+            <button className="icon-button" type="button" disabled title="Notifications are not implemented" aria-label="Notifications unavailable"><Icon name="activity" /></button>
           </div>
         </header>
         {children}

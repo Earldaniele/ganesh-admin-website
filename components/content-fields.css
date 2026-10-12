@@ -44,3 +44,6 @@
 .cms-dialog-actions button { padding: 9px 12px; border: 1px solid #cdbfad; border-radius: 6px; cursor: pointer; }
 @media (max-width: 600px) { .cms-fields fieldset, .cms-group, .cms-item { padding: 10px; } .cms-actions span { flex-basis: 100%; } }
 @media (max-width: 700px) { .cms-default-grid { grid-template-columns: 1fr; } .cms-option-row { grid-template-columns: 24px minmax(0, 1fr) auto; } .cms-option-row button:nth-of-type(1), .cms-option-row button:nth-of-type(2) { padding-inline: 6px; } }
+
+.cms-dialog { position: fixed; inset: 0; margin: auto; color: #4b1118; }
+.cms-dialog::backdrop { background: rgb(20 4 5 / .65); }

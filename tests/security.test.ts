@@ -15,10 +15,12 @@ test("password hashes are salted, verified and bounded", async () => {
   await assert.rejects(hashPassword("short"));
 });
 test("cookie writes reject absent and cross-site origins", () => {
-  const url = "http://localhost:3001/api/content";
+  const origin = process.env.ADMIN_SITE_ORIGIN || "http://localhost:3001";
+  const url = `${origin}/api/content`;
   assert.equal(isSameOrigin(new Request(url)), false);
   assert.equal(isSameOrigin(new Request(url, { headers: { origin: "https://other.test" } })), false);
-  assert.equal(isSameOrigin(new Request(url, { headers: { origin: "http://localhost:3001" } })), true);
+  assert.equal(isSameOrigin(new Request(url, { headers: { origin } })), true);
+  assert.equal(isSameOrigin(new Request(url, { headers: { origin, "sec-fetch-site": "cross-site" } })), false);
 });
 test("JSON request limits are enforced without trusting Content-Length", async () => {
   await assert.rejects(readJson(new Request("http://localhost/test", { method: "POST", body: JSON.stringify({ big: "x".repeat(1000) }) }), 20));

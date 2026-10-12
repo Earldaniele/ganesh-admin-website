@@ -4,9 +4,9 @@ import { getMySqlPool, type DbRow } from "@/lib/mysql/db";
 import { getAdminUser } from "@/lib/auth/session";
 export const runtime = "nodejs";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ filename: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ filename: string }> }) {
   const { filename } = await params;
-  if (!/^[a-f0-9-]{36}\.(png|jpg|webp)$/.test(filename)) return new Response(null, { status: 404 });
+  if (!/^[a-f0-9-]{36}\.(png|jpg|webp|mp4)$/.test(filename)) return new Response(null, { status: 404 });
   const pool = getMySqlPool();
   if (!pool) return new Response(null, { status: 503 });
   try {
@@ -14,6 +14,17 @@ export async function GET(_request: Request, { params }: { params: Promise<{ fil
     const asset = rows[0];
     if (!asset || (!asset.published && !await getAdminUser())) return new Response(null, { status: 404 });
     const bytes = await readFile(path.join(path.resolve(/* turbopackIgnore: true */ process.env.CMS_MEDIA_DIR || "var/media"), "content", filename));
-    return new Response(bytes, { headers: { "content-type": String(asset.mime_type), "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'; sandbox", "cache-control": asset.published ? "public, max-age=31536000, immutable" : "private, no-store" } });
+    const headers = { "content-type": String(asset.mime_type), "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'; sandbox", "cache-control": asset.published ? "public, max-age=31536000, immutable" : "private, no-store", "accept-ranges": "bytes" };
+    const range = request.headers.get("range");
+    if (range) {
+      const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+      let start = match?.[1] ? Number(match[1]) : 0;
+      let end = match?.[2] ? Number(match[2]) : bytes.length - 1;
+      if (match && !match[1] && match[2]) { start = Math.max(0, bytes.length - Number(match[2])); end = bytes.length - 1; }
+      if (!match || (!match[1] && !match[2]) || !Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start > end || start >= bytes.length) return new Response(null, { status: 416, headers: { ...headers, "content-range": `bytes */${bytes.length}` } });
+      end = Math.min(end, bytes.length - 1);
+      return new Response(bytes.subarray(start, end + 1), { status: 206, headers: { ...headers, "content-range": `bytes ${start}-${end}/${bytes.length}`, "content-length": String(end - start + 1) } });
+    }
+    return new Response(bytes, { headers: { ...headers, "content-length": String(bytes.length) } });
   } catch { return new Response(null, { status: 503 }); }
 }

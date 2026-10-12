@@ -1,4 +1,5 @@
 "use client";
+import { reconcileCopyAliases } from "@/lib/content/copy-aliases";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { contentSnapshotSchema, type ContentSnapshot } from "@/lib/content/schema";
@@ -6,10 +7,13 @@ import { initialContent } from "@/lib/content/seed";
 import { validateOrderBuilderConfig } from "@/lib/content/validation";
 import { editorTargets, pageTargets, pages, getAt, setAt, type EditorTarget, type PageId } from "@/lib/visual-editor";
 import { EditorDialog, EditorFields } from "./EditorFields";
+import FabricCatalogEditor from "./FabricCatalogEditor";
+import { fabricCategories, newFabricCategory, newFabricCard } from "@/lib/fabric-catalog";
+import { FeaturedProductsEditor } from "./FeaturedProductsEditor";
 import "./visual-editor.css";
 
 type Session = { token: string; origin: string; expiresAt: number };
-type Panel = { target: EditorTarget; values: Record<string, unknown> };
+type Panel = { target: EditorTarget; values: Record<string, unknown>; fabricCategoryId?: string; fabricCardId?: string };
 export default function VisualEditor() {
   const frame = useRef<HTMLIFrameElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -17,6 +21,8 @@ export default function VisualEditor() {
   const [version, setVersion] = useState(0);
   const [page, setPage] = useState<PageId>("home");
   const [device, setDevice] = useState("desktop");
+  const [sectionQuery, setSectionQuery] = useState("");
+  const [showSections, setShowSections] = useState(false);
   const [editable, setEditable] = useState(true);
   const [dirty, setDirty] = useState(false);
   const [past, setPast] = useState<ContentSnapshot[]>([]);
@@ -38,6 +44,10 @@ export default function VisualEditor() {
   const mediaCache = useRef(new Map<string, string>());
   const targets = useMemo(() => content ? editorTargets(page, content) : [], [page, content]);
   const sections = pageTargets(page);
+  const sectionGroups = [
+    { label: "Shared website", items: sections.filter((s) => ["header", "support", "footer", "seo"].includes(s.id)) },
+    { label: `${pages[page].label} sections`, items: sections.filter((s) => !["header", "support", "footer", "seo"].includes(s.id)) },
+  ];
   useEffect(() => {
     if (!panel) return;
     const timer = requestAnimationFrame(() => panelRef.current?.querySelector<HTMLElement>("textarea,input,button")?.focus());
@@ -85,7 +95,25 @@ export default function VisualEditor() {
     if (!content || !editable || busy || uploading) return;
     if (panel) { setError("Apply or cancel the open edit panel before selecting another item. Your edits are retained."); return; }
     setSelected(target.id); setError("");
-    setPanel({ target, values: Object.fromEntries(target.paths.filter((path) => getAt(content, path) !== undefined).map((path) => [path, structuredClone(getAt(content, path))])) });
+    const values = Object.fromEntries(target.paths.filter((path) => getAt(content, path) !== undefined).map((path) => [path, structuredClone(getAt(content, path))]));
+    let fabricCategoryId: string | undefined;
+    let fabricCardId: string | undefined;
+    if (target.paths.includes("fabricCategories")) {
+      values.fabricCategories = structuredClone(fabricCategories(content));
+      if (target.id === "fabric-category:new") {
+        const categories = values.fabricCategories as NonNullable<ContentSnapshot["fabricCategories"]>;
+        if (categories.length >= 100) { setError("Maximum of 100 fabric categories reached."); return; }
+        const category = newFabricCategory(categories.length, crypto.randomUUID());
+        values.fabricCategories = [...categories, category]; fabricCategoryId = category.id;
+      } else if (target.id.startsWith("fabric-public:")) fabricCategoryId = target.id.slice("fabric-public:".length);
+      else if (target.id.startsWith("fabric-public-new:")) {
+        fabricCategoryId = target.id.slice("fabric-public-new:".length);
+        if (content.fabrics.length >= 100) { setError("Maximum of 100 fabric cards reached."); return; }
+        const card = newFabricCard(fabricCategoryId, content.fabrics.length, crypto.randomUUID());
+        values.fabrics = [...content.fabrics, card]; fabricCardId = card.id;
+      }
+    }
+    setPanel({ target, values, fabricCategoryId, fabricCardId });
   }
   useEffect(() => {
     const receive = (event: MessageEvent) => {
@@ -143,21 +171,26 @@ export default function VisualEditor() {
     try {
       let next = content;
       for (const [path, value] of Object.entries(panel.values)) next = setAt(next, path, value);
-      const validated = validate(next);
+      const reconciled = reconcileCopyAliases(content, next);
+      const validated = validate(reconciled.content);
       setPast((history) => [...history.slice(-19), content]); setFuture([]);
-      setContent(validated); setDirty(true); setPanel(null); setError(""); setStatus("Changes applied to the visual preview. Save Draft to keep them.");
+      setContent(validated); setDirty(true); setPanel(null); setError(""); setStatus("Changes applied to the visual preview. Linked header/footer copy updates together. Save Draft to keep them.");
       post({ type: "restore-focus" });
+      if (panel.fabricCategoryId) post({ type: "fabric-category", id: panel.fabricCategoryId });
     } catch (failure) { setError(failure instanceof Error ? failure.message : "Please check the content."); }
   }
-  async function save(publish: boolean) {
-    if (!content || busy || uploading || panel) return;
+  async function save(publish: boolean, includePanel = false) {
+    if (!content || busy || uploading || (panel && !includePanel)) return;
     setBusy(true); setError(""); setStatus("");
     try {
-      const snapshot = validate(content);
+      let next = content;
+      if (includePanel && panel) for (const [path, value] of Object.entries(panel.values)) next = setAt(next, path, value);
+      const snapshot = validate(reconcileCopyAliases(content, next).content);
       const response = await fetch("/api/content", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ content: snapshot, version }) });
       const result = await response.json();
       if (!response.ok) throw new Error(response.status === 409 ? "Another administrator saved a newer draft. Your changes are still here. Keep this tab open and coordinate with the other administrator before reloading." : result.error ?? "Save failed.");
-      setVersion(result.version); setDirty(false); setStatus("Private draft saved.");
+      if (includePanel && panel) { setPast((history) => [...history.slice(-19), content]); setFuture([]); setContent(snapshot); setPanel(null); }
+      setContent(result.content ?? snapshot); setVersion(result.version); setDirty(false); setStatus("Private draft saved.");
       if (publish) {
         const response = await fetch("/api/content", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ version: result.version }) });
         const published = await response.json();
@@ -175,26 +208,24 @@ export default function VisualEditor() {
     if (!content || !future.length || panel || busy || uploading) return;
     setPast((history) => [...history, content]); setContent(future[future.length - 1]); setFuture((history) => history.slice(0, -1)); setDirty(true); setError(""); setStatus("Change reapplied to the working draft.");
   }
-  return <div className="ve-editor"><header className="ve-toolbar"><Link className="ve-brand" href="/dashboard">GANESH <span>ADMIN</span></Link><label>Page<select aria-label="Page" value={page} onChange={(event) => { setPage(event.target.value as PageId); setSelected("hero"); }}>{Object.entries(pages).map(([id, entry]) => <option key={id} value={id}>{entry.label}</option>)}</select></label><div className="ve-mode"><button aria-pressed={editable} onClick={() => setEditable(true)}>Edit</button><button aria-pressed={!editable} onClick={() => setEditable(false)}>Preview</button></div><label>Viewport<select aria-label="Viewport" value={device} onChange={(event) => setDevice(event.target.value)}><option value="desktop">Desktop</option><option value="tablet">Tablet · 768 px</option><option value="mobile">Mobile · 390 px</option></select></label><span className="ve-save-state">{dirty || panel ? "● Unsaved changes" : `Draft v${version}`}</span><button disabled={!content || busy || uploading || !!panel} onClick={() => void save(false)}>{busy ? "Saving…" : "Save Draft"}</button>{canPublish ? <button className="primary" disabled={!content || busy || uploading || !!panel} onClick={() => setPublishConfirm(true)}>Save &amp; Publish</button> : <span className="ve-save-state">Draft access · Ask an authorized team member to publish</span>}</header>
-    <div className="ve-status" aria-live="polite"><span>{pages[page].label} · {editable ? "Edit mode" : "Preview mode"} · {targets.find((t) => t.id === selected)?.label ?? "Page"}</span><span>{status}</span>{panel ? <span>Apply or cancel the open panel before saving.</span> : null}</div>
+  return <div className="ve-editor"><header className="ve-toolbar"><Link className="ve-brand" href="/dashboard">GANESH <span>ADMIN</span></Link><label>Page<select aria-label="Page" disabled={!!panel || busy || uploading} value={page} onChange={(event) => { setPage(event.target.value as PageId); setSelected("hero"); }}>{Object.entries(pages).map(([id, entry]) => <option key={id} value={id}>{entry.label}</option>)}</select></label><div className="ve-mode"><button aria-pressed={editable} onClick={() => setEditable(true)}>Edit</button><button aria-pressed={!editable} onClick={() => setEditable(false)}>Preview</button></div><label>Viewport<select aria-label="Viewport" value={device} onChange={(event) => setDevice(event.target.value)}><option value="desktop">Desktop</option><option value="tablet">Tablet · 768 px</option><option value="mobile">Mobile · 390 px</option></select></label><span className="ve-save-state">{dirty || panel ? "● Unsaved changes" : `Draft v${version}`}</span><button disabled={!content || busy || uploading || !!panel} onClick={() => void save(false)}>{busy ? "Saving…" : "Save Draft"}</button>{canPublish ? <button className="primary" disabled={!content || busy || uploading || !!panel} onClick={() => setPublishConfirm(true)}>Save &amp; Publish</button> : <span className="ve-save-state">Draft access · Ask an authorized team member to publish</span>}</header>
+    <div className="ve-status" aria-live="polite"><button className="ve-sections-toggle" aria-expanded={showSections} onClick={() => setShowSections(!showSections)}>Sections</button><span>{pages[page].label} / {targets.find((t) => t.id === selected)?.label ?? "Page"} · {editable ? "Edit mode" : "Preview mode"}</span><span>{status}</span>{panel ? <span>{panel.values.featuredProducts ? "Save Changes keeps the open section." : "Apply or cancel the open panel before saving."}</span> : null}</div>
     {error ? <div className="ve-error" role="alert">{error}</div> : null}
     {refreshPending ? <button onClick={async () => { const response = await fetch("/api/content/revalidate", { method: "POST" }).catch(() => null); if (response?.ok) { setRefreshPending(false); setStatus("Public refresh completed."); } else setError("Public refresh still unavailable. Try again."); }}>Retry public refresh</button> : null}
-    <div className="ve-workspace"><aside className="ve-sidebar"><h1>Visual Editor</h1><p>{editable ? "Use the website normally. Choose an Edit action to change its content." : "Customer view. Editing controls are hidden."}</p><nav aria-label="Page sections">{sections.map((section) => <div className={selected === section.id ? "selected" : ""} key={section.id}><button onClick={() => { setSelected(section.id); post({ type: "scroll", selector: section.selector }); }}>{section.label}</button>{editable ? <button aria-label={`Edit ${section.label}`} disabled={!content || uploading || busy} onClick={() => openPanel(section)}>Edit</button> : null}</div>)}</nav><div className="ve-history"><button disabled={!past.length || !!panel || busy || uploading} onClick={undo}>Undo</button><button disabled={!future.length || !!panel || busy || uploading} onClick={redo}>Redo</button></div></aside>
+    <div className="ve-workspace"><aside className={`ve-sidebar${showSections ? " ve-sidebar-open" : ""}`}><h1>Visual Editor</h1><p>{editable ? "Choose a section to find it in the preview. Select Edit to open its content controls." : "Customer view. Editing controls are hidden."}</p><label className="ve-section-search">Find a section<input type="search" placeholder="Search sections…" value={sectionQuery} onChange={(event) => setSectionQuery(event.target.value)} /></label><nav aria-label="Page sections">{sectionGroups.map((group) => <section className="ve-section-group" key={group.label}><h2>{group.label}</h2>{group.items.filter((section) => section.label.toLowerCase().includes(sectionQuery.toLowerCase())).map((section) => <div className={`ve-section-row${selected === section.id ? " selected" : ""}`} key={section.id}><button aria-current={selected === section.id ? "true" : undefined} onClick={() => { setSelected(section.id); post({ type: "scroll", selector: section.selector }); setShowSections(false); }}>{section.label}</button>{editable ? <button aria-label={`Edit ${section.label}`} disabled={!content || uploading || busy || !!panel} onClick={() => { openPanel(section); setShowSections(false); }}>Edit</button> : null}</div>)}</section>)}</nav>{!sections.some((s) => s.label.toLowerCase().includes(sectionQuery.toLowerCase())) ? <p>No matching sections.</p> : null}<div className="ve-history"><button disabled={!past.length || !!panel || busy || uploading} onClick={undo}>Undo</button><button disabled={!future.length || !!panel || busy || uploading} onClick={redo}>Redo</button></div></aside>
     <main className="ve-canvas-area"><div className={`ve-canvas ve-device-${device}`}>
       {!content ? <div className="ve-loading" role="status">Loading saved draft…</div> : null}
-      {session ? <iframe ref={frame} title="Ganesh website visual preview" src={`${session.origin}/editor-preview?token=${encodeURIComponent(session.token)}`} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" referrerPolicy="no-referrer" /> : null}
+      {session ? <iframe ref={frame} title="Ganesh website visual preview" src={`${session.origin}/editor-preview?token=${encodeURIComponent(session.token)}`} allow="fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" referrerPolicy="no-referrer" /> : null}
       {content && (!ready || previewError) ? <div className="ve-loading" role="status"><p>{previewError || "Connecting to the private public-site preview…"}</p>{previewError ? <button onClick={() => void startPreview()}>Reconnect preview</button> : null}</div> : null}
     </div></main>
-    {panel ? <aside ref={panelRef} className="ve-panel" aria-label="Edit content panel"><header><div><small>EDIT CONTENT</small><h2>{panel.target.label}</h2></div><button aria-label="Cancel editing" disabled={uploading} onClick={() => { setPanel(null); setError(""); post({ type: "restore-focus" }); }}>×</button></header><p>The website stays visible beside this panel. Apply changes to update it immediately.</p><fieldset disabled={uploading || busy}>{Object.entries(panel.values).map(([path, value]) => <EditorFields key={path} name={/^products\.\d+$/.test(path) ? "Product" : path.split(".").at(-1)!} value={value} template={getAt(initialContent, path)} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} onChange={(next) => setPanel((current) => current ? { ...current, values: { ...current.values, [path]: next } } : current)} requestRemove={(title, item, apply) => {
+    {panel ? <aside ref={panelRef} className="ve-panel" aria-label="Edit content panel"><header><div><small>{pages[page].label} / EDIT CONTENT</small><h2>{panel.target.label}</h2></div><button aria-label="Cancel editing" disabled={uploading} onClick={() => { setPanel(null); setError(""); post({ type: "restore-focus" }); }}>×</button></header><p>{panel.values.featuredProducts ? "Save Changes stores this section in the database. Use Save & Publish afterward to update the public website." : "Apply updates the private preview. Save Draft keeps your changes in the database."}</p><fieldset disabled={uploading || busy}>{panel.values.fabricCategories && panel.values.fabrics ? <FabricCatalogEditor categories={panel.values.fabricCategories as NonNullable<ContentSnapshot["fabricCategories"]>} fabrics={panel.values.fabrics as ContentSnapshot["fabrics"]} initialCategoryId={panel.fabricCategoryId} initialCardId={panel.fabricCardId} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} requestRemove={(title, _item, apply) => setRemove({ title, apply })} onChange={(categories, fabrics, categoryId) => setPanel((current) => current ? { ...current, fabricCategoryId: categoryId ?? current.fabricCategoryId, values: { ...current.values, fabricCategories: categories, fabrics } } : current)} /> : null}{panel.values.featuredProducts ? <FeaturedProductsEditor value={panel.values.featuredProducts as NonNullable<ContentSnapshot["featuredProducts"]>} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} requestRemove={(title, _item, apply) => setRemove({ title, apply })} onChange={(featuredProducts) => setPanel((current) => current ? { ...current, values: { ...current.values, featuredProducts } } : current)} /> : null}{Object.entries(panel.values).filter(([path]) => path !== "featuredProducts" && (!panel.values.fabricCategories || !["fabricCategories", "fabrics"].includes(path))).map(([path, value]) => <EditorFields key={path} path={path} name={/^products\.\d+$/.test(path) ? "Product" : path.split(".").at(-1)!} value={value} template={getAt(initialContent, path)} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} onChange={(next) => setPanel((current) => current ? { ...current, values: { ...current.values, [path]: next } } : current)} requestRemove={(title, item, apply) => {
       if (item && typeof item === "object" && "id" in item && path.startsWith("products")) {
         const references = content?.workCategories.filter((category) => category.story.relatedProductIds.includes(String(item.id))).map((category) => category.label) ?? [];
         if (references.length) { setError(`Cannot remove ${title}: referenced by ${references.join(", ")}. Edit those Our Work stories and uncheck the related product first.`); return; }
       }
       setRemove({ title, apply });
-    }} />)}</fieldset>{error ? <p className="ve-error" role="alert">{error}</p> : null}<footer><button disabled={uploading} onClick={() => { setPanel(null); setError(""); post({ type: "restore-focus" }); }}>Cancel</button><button className="primary" disabled={uploading || busy} onClick={applyPanel}>Apply changes</button></footer></aside> : null}</div>
+    }} />)}</fieldset>{error ? <p className="ve-error" role="alert">{error}</p> : null}<footer><button disabled={uploading} onClick={() => { setPanel(null); setError(""); post({ type: "restore-focus" }); }}>Cancel</button><button disabled={uploading || busy} onClick={applyPanel}>Apply changes</button>{panel.values.featuredProducts ? <button className="primary" disabled={uploading || busy} onClick={() => void save(false, true)}>{busy ? "Saving…" : "Save Changes"}</button> : null}</footer></aside> : null}</div>
     {publishConfirm ? <EditorDialog title="Publish the current draft?" onClose={() => setPublishConfirm(false)}><p>The exact current working draft will become visible on the public Ganesh website.</p><footer><button onClick={() => setPublishConfirm(false)}>Cancel</button><button className="primary" onClick={() => { setPublishConfirm(false); void save(true); }}>Publish changes</button></footer></EditorDialog> : null}
     {remove ? <EditorDialog title={`Remove ${remove.title}?`} onClose={() => setRemove(null)}><p>This removes the item from the working draft. Uploaded media and saved revision history are retained.</p><footer><button onClick={() => setRemove(null)}>Cancel</button><button className="primary" onClick={() => { remove.apply(); setRemove(null); }}>Remove item</button></footer></EditorDialog> : null}
   </div>;
 }
-
-

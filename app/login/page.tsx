@@ -50,7 +50,7 @@ export default function LoginPage() {
 
   async function handleForgotPassword() {
     if (!email.includes("@")) { setError("Enter your account email first."); return; }
-    setError("Password resets are managed by the administrator in the local CMS database.");
+    setError("Self-service password recovery is not available. Contact your administrator for account assistance.");
   }
 
   return (

@@ -3,6 +3,7 @@ import { contentSnapshotSchema, type ContentSnapshot } from "./schema";
 import { getMySqlPool, isMySqlConfigured, jsonColumn, type DbRow } from "@/lib/mysql/db";
 import { requireAdmin } from "@/lib/auth/session";
 import { collectMediaIds } from "./media-references";
+import { reconcileCopyAliases } from "./copy-aliases";
 
 export const CMS_SITE_KEY = "ganesh-main";
 
@@ -64,17 +65,20 @@ export async function saveDraft(content: unknown, expectedVersion: number) {
       const [assets] = await connection.execute("SELECT id FROM media_assets WHERE id = ? AND deleted_at IS NULL FOR UPDATE", [id]) as unknown as [DbRow[], unknown];
       if (!assets.length) { await connection.rollback(); return { ok: false as const, status: 422, error: "An image reference is missing or deleted. Replace that image before saving." }; }
     }
-    const [rows] = await connection.execute("SELECT version FROM site_drafts WHERE site_key = ? FOR UPDATE", [CMS_SITE_KEY]) as unknown as [DbRow[], unknown];
+    const [rows] = await connection.execute("SELECT version, content FROM site_drafts WHERE site_key = ? FOR UPDATE", [CMS_SITE_KEY]) as unknown as [DbRow[], unknown];
     const currentVersion = rows[0] ? Number(rows[0].version) : 0;
     if (currentVersion !== expectedVersion) {
       await connection.rollback();
       return { ok: false as const, status: 409, error: "This draft changed in another session." };
     }
+    let reconciled;
+    try { reconciled = reconcileCopyAliases(parseContent(rows[0]?.content), parsed.data); }
+    catch (error) { await connection.rollback(); return { ok: false as const, status: 422, error: error instanceof Error ? error.message : "Conflicting copy controls." }; }
     const nextVersion = currentVersion + 1;
-    await connection.execute(`INSERT INTO site_drafts (site_key, schema_version, content, version, updated_by) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE schema_version = VALUES(schema_version), content = VALUES(content), version = VALUES(version), updated_by = VALUES(updated_by), updated_at = UTC_TIMESTAMP(6)`, [CMS_SITE_KEY, parsed.data.schemaVersion, JSON.stringify(parsed.data), nextVersion, user.id]);
+    await connection.execute(`INSERT INTO site_drafts (site_key, schema_version, content, version, updated_by) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE schema_version = VALUES(schema_version), content = VALUES(content), version = VALUES(version), updated_by = VALUES(updated_by), updated_at = UTC_TIMESTAMP(6)`, [CMS_SITE_KEY, parsed.data.schemaVersion, JSON.stringify(reconciled.content), nextVersion, user.id]);
     await connection.execute("INSERT INTO audit_logs (actor, action, metadata) VALUES (?, 'draft_saved', ?)", [user.id, JSON.stringify({ siteKey: CMS_SITE_KEY, version: nextVersion })]);
     await connection.commit();
-    return { ok: true as const, version: nextVersion };
+    return { ok: true as const, version: nextVersion, reconciledFields: reconciled.reconciledFields, content: reconciled.content };
   } catch {
     await connection.rollback();
     return { ok: false as const, status: 500, error: "Could not save the draft. Check the database connection and retry." };

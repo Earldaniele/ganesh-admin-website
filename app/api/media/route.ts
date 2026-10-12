@@ -3,7 +3,7 @@ import path from "node:path";
 import { getMySqlPool } from "@/lib/mysql/db";
 import { requireAdmin } from "@/lib/auth/session";
 import { isSameOrigin } from "@/lib/auth/request";
-import { MAX_MEDIA_BYTES, validateImage } from "@/lib/media/validate";
+import { MAX_UPLOAD_BYTES, validateImage, validateVideo } from "@/lib/media/validate";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
@@ -13,10 +13,10 @@ export async function POST(request: Request) {
   const pool = getMySqlPool();
   if (!pool) return Response.json({ error: "CMS is not configured." }, { status: 503 });
   const length = Number(request.headers.get("content-length") || 0);
-  if (length > MAX_MEDIA_BYTES + 65536) return Response.json({ error: "Upload exceeds 5 MB." }, { status: 413 });
+  if (length > MAX_UPLOAD_BYTES + 65536) return Response.json({ error: "Upload exceeds 32 MB." }, { status: 413 });
   // Bound streamed multipart requests as well as requests with Content-Length.
   const reader = request.body?.getReader();
-  if (!reader) return Response.json({ error: "Choose an image." }, { status: 400 });
+  if (!reader) return Response.json({ error: "Choose an image or MP4 video." }, { status: 400 });
   const parts: Uint8Array[] = [];
   let total = 0;
   try {
@@ -24,18 +24,18 @@ export async function POST(request: Request) {
       const part = await reader.read();
       if (part.done) break;
       total += part.value.length;
-      if (total > MAX_MEDIA_BYTES + 65536) return Response.json({ error: "Upload exceeds 5 MB." }, { status: 413 });
+      if (total > MAX_UPLOAD_BYTES + 65536) return Response.json({ error: "Upload exceeds 32 MB." }, { status: 413 });
       parts.push(part.value);
     }
   } finally { await reader.cancel().catch(() => undefined); }
   const form = await new Response(Buffer.concat(parts), { headers: { "content-type": request.headers.get("content-type") || "" } }).formData().catch(() => null);
   const file = form?.get("file");
   const alt = String(form?.get("alt") || "").trim();
-  if (!(file instanceof File)) return Response.json({ error: "Choose an image file." }, { status: 400 });
-  if (!alt || alt.length > 300) return Response.json({ error: "Describe the image in 1–300 characters." }, { status: 422 });
+  if (!(file instanceof File)) return Response.json({ error: "Choose an image or MP4 video file." }, { status: 400 });
+  if (!alt || alt.length > 300) return Response.json({ error: "Describe the media in 1–300 characters." }, { status: 422 });
   let validated;
-  try { validated = await validateImage(Buffer.from(await file.arrayBuffer()), file.type); }
-  catch (error) { return Response.json({ error: error instanceof Error ? error.message : "Invalid image." }, { status: 415 }); }
+  try { const bytes = Buffer.from(await file.arrayBuffer()); validated = file.type === "video/mp4" ? validateVideo(bytes, file.type) : await validateImage(bytes, file.type); }
+  catch (error) { return Response.json({ error: error instanceof Error ? error.message : "Invalid media." }, { status: 415 }); }
   const assetId = crypto.randomUUID();
   const relativePath = `content/${assetId}.${validated.extension}`;
   // Runtime-mounted media is not application source and must not be bundled.
@@ -57,6 +57,6 @@ export async function POST(request: Request) {
   } catch {
     await connection.rollback().catch(() => undefined);
     if (fileWritten) await unlink(absolutePath).catch(() => undefined);
-    return Response.json({ error: "Could not store the image. Check the media directory and MariaDB." }, { status: 500 });
+    return Response.json({ error: "Could not store the media. Check the media directory and MariaDB." }, { status: 500 });
   } finally { connection.release(); }
 }

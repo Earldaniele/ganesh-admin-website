@@ -39,6 +39,7 @@ yarn-error.log*
 !.env.example
 /var/
 /.next-build/
+/.next-editor-build/
 /.local-setup/
 /.visual-qa/
 

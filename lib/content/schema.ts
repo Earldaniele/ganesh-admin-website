@@ -8,6 +8,13 @@ const mediaRefSchema = z.object({
   focalPoint: z.string().max(100).optional(),
 });
 const contentMediaRefSchema = mediaRefSchema.extend({ alt: z.string().min(1, "Alt text is required for content images.").max(300) });
+const videoRefSchema = z.object({
+  kind: z.literal("video"),
+  src: z.string().max(2000).refine((value) => value === "" || /^(\/(?!\/)|https?:\/\/)/i.test(value) && safeUrl(value), "Use a local or HTTP(S) video URL."),
+  alt: z.string().max(300),
+  captions: z.string().max(2000).refine((value) => value === "" || /^(\/(?!\/)|https?:\/\/)/i.test(value) && safeUrl(value), "Use a local or HTTP(S) captions URL."),
+  assetId: z.string().uuid().optional(),
+});
 
 const linkSchema = z.object({
   label: z.string().min(1).max(120),
@@ -34,10 +41,14 @@ const productSchema = z.object({
 
 const fabricSchema = z.object({
   id: z.string().min(1).max(100),
+  categoryId: z.string().min(1).max(100).optional(),
   slug: z.string().min(1).max(120),
   name: z.string().min(1).max(160),
   description: z.string().max(3000),
   qualities: z.array(z.string().min(1).max(120)).max(8),
+  shortDescription: z.string().max(1000).default(""),
+  benefits: z.array(z.string().max(300)).max(20).default([]),
+  recommendedUses: z.array(z.string().max(300)).max(20).default([]),
   image: contentMediaRefSchema,
   order: z.number().int().nonnegative(),
   active: z.boolean().default(true),
@@ -104,6 +115,24 @@ const simpleCopySchema = z.object({
 
 export const contentSnapshotSchema = z.object({
   schemaVersion: z.literal(1),
+  editorIntegrationVersion: z.literal(2).optional(),
+  supportCopy: z.object({
+    heading: z.string().min(1).max(160), greeting: z.string().max(1000), notice: z.string().max(300),
+    thinkingLabel: z.string().max(300), composerPlaceholder: z.string().max(300),
+    prompts: z.array(z.object({ label: z.string().min(1).max(160), reply: z.string().max(3000) })).min(1).max(20),
+  }).optional(),
+  designCopy: z.record(z.string().regex(/^[a-zA-Z][a-zA-Z0-9]*$/), z.record(z.string().regex(/^[a-zA-Z][a-zA-Z0-9]*$/), z.string().max(5000))).optional(),
+  designMedia: z.record(z.string().regex(/^[a-zA-Z][a-zA-Z0-9]*$/), z.record(z.string().regex(/^[a-zA-Z][a-zA-Z0-9]*$/), mediaRefSchema)).optional(),
+  featuredProducts: z.array(z.object({
+    id: z.string().min(1).max(100), name: z.string().min(1).max(160),
+    tagline: z.string().max(500), description: z.string().max(5000),
+    fabric: z.string().max(500), bestFor: z.string().max(500), customization: z.string().max(500),
+    category: z.string().max(120), orderBuilderProduct: z.string().max(160).optional(),
+    image: contentMediaRefSchema, poster: mediaRefSchema, video: videoRefSchema,
+    qualities: z.array(z.string().max(300)).max(20),
+    gallery: z.array(z.object({ id: z.string().min(1).max(120), label: z.string().min(1).max(160), image: contentMediaRefSchema })).min(1).max(30),
+    order: z.number().int().nonnegative(), active: z.boolean(),
+  })).max(30).optional(),
   global: z.object({
     businessName: z.string().min(1).max(160),
     tagline: z.string().max(300),
@@ -111,9 +140,9 @@ export const contentSnapshotSchema = z.object({
     location: z.string().max(300),
     phone: z.string().max(100),
     email: z.string().max(200),
-    facebook: z.string().max(500),
+    facebook: z.string().max(500).refine(value => value === "" || /^https?:\/\//i.test(value) && safeUrl(value), "Use an HTTP(S) Facebook URL."),
     address: z.string().max(500),
-    maps: z.string().max(1000),
+    maps: z.string().max(1000).refine(value => value === "" || /^https?:\/\//i.test(value) && safeUrl(value), "Use an HTTP(S) Maps URL."),
     hours: z.string().max(500),
     quoteLabel: z.string().max(120),
     logo: mediaRefSchema,
@@ -142,7 +171,7 @@ export const contentSnapshotSchema = z.object({
       order: simpleCopySchema,
       values: simpleCopySchema,
       help: simpleCopySchema,
-      footer: z.object({ kicker: z.string().max(300), heading: z.string().max(500), copy: z.string().max(3000), primary: linkSchema, secondary: linkSchema, legal: z.string().max(500), details: z.array(z.object({ label: z.string().max(160), value: z.string().max(500), source: z.enum(["address", "establishedYear", "phone", "email", "hours", "location", "businessName", "tagline"]).optional() })).max(10) }),
+      footer: z.object({ kicker: z.string().max(300), heading: z.string().max(500), copy: z.string().max(3000), primary: linkSchema, secondary: linkSchema, legal: z.string().max(500), details: z.array(z.object({ label: z.string().max(160), value: z.string().max(500), source: z.enum(["address", "establishedYear", "phone", "email", "hours", "location", "businessName", "tagline", "facebook"]).optional() })).max(10) }),
     }),
     products: z.record(z.string().max(100), z.string().max(5000)).optional(),
     ourWork: z.record(z.string().max(100), z.string().max(5000)).optional(),
@@ -157,6 +186,7 @@ export const contentSnapshotSchema = z.object({
   }).optional(),
   products: z.array(productSchema).max(100),
   fabrics: z.array(fabricSchema).max(100),
+  fabricCategories: z.array(z.object({ id: z.string().min(1).max(100), name: z.string().min(1).max(160), description: z.string().max(3000), order: z.number().int().nonnegative(), active: z.boolean().default(true) })).max(100).optional(),
   productionSteps: z.array(productionStepSchema).max(50),
   workCategories: z.array(workCategorySchema).max(50),
   brandValues: z.array(z.object({ id: z.string().max(100), name: z.string().max(160), description: z.string().max(1500), order: z.number().int().nonnegative(), active: z.boolean().default(true) })).max(20),
@@ -174,6 +204,14 @@ export const contentSnapshotSchema = z.object({
   }),
 }).superRefine((content, ctx) => {
   const collections = ["products", "fabrics", "productionSteps", "workCategories", "brandValues", "sizeGuides", "faqs"] as const;
+  if (content.featuredProducts) {
+    const ids = new Set<string>();
+    for (const [index, item] of content.featuredProducts.entries()) {
+      if (ids.has(item.id)) ctx.addIssue({ code: "custom", path: ["featuredProducts", index, "id"], message: "Featured product IDs must be unique." });
+      ids.add(item.id);
+    }
+    if (!content.featuredProducts.some((item) => item.active)) ctx.addIssue({ code: "custom", path: ["featuredProducts"], message: "Keep at least one active featured product." });
+  }
   for (const key of collections) {
     const ids = new Set<string>();
     const slugs = new Set<string>();
@@ -187,6 +225,17 @@ export const contentSnapshotSchema = z.object({
     });
   }
   const productIds = new Set(content.products.map((item) => item.id));
+  if (content.fabricCategories) {
+    const ids = new Set<string>();
+    content.fabricCategories.forEach((category, index) => {
+      if (ids.has(category.id)) ctx.addIssue({ code: "custom", path: ["fabricCategories", index, "id"], message: "Category IDs must be unique." });
+      ids.add(category.id);
+    });
+    content.fabrics.forEach((fabric, index) => {
+      if (!ids.has(fabric.categoryId ?? fabric.id)) ctx.addIssue({ code: "custom", path: ["fabrics", index, "categoryId"], message: "Select an existing fabric category." });
+    });
+    if (!content.fabricCategories.some((category) => category.active)) ctx.addIssue({ code: "custom", path: ["fabricCategories"], message: "Keep at least one active fabric category." });
+  }
   content.workCategories.forEach((category, index) => {
     category.story.relatedProductIds.forEach((id) => {
       if (!productIds.has(id)) ctx.addIssue({ code: "custom", path: ["workCategories", index, "story", "relatedProductIds"], message: `Remove the reference to missing product ${id} before deleting it.` });

@@ -1,0 +1,75 @@
+{
+  "HeroHeader": [
+    "pages.home.hero",
+    "designCopy.HeroHeader",
+    "pages.home.hero.primary",
+    "pages.home.hero.secondary"
+  ],
+  "BrandStatement": [
+    "pages.home.brandStatement"
+  ],
+  "FeaturedProduct": [
+    "designCopy.FeaturedProduct",
+    "editorial.labels.productDialog"
+  ],
+  "WhatWeMake": [
+    "editorial.labels.productDialog",
+    "designCopy.WhatWeMake",
+    "pages.home.whatWeMake"
+  ],
+  "FabricExplorer": [
+    "pages.home.fabrics",
+    "designCopy.FabricExplorer",
+    "editorial.labels.productDialog"
+  ],
+  "ProductionProcess": [
+    "pages.home.production",
+    "editorial.labels.sections"
+  ],
+  "OurWork": [
+    "pages.home.work",
+    "editorial.labels.sections"
+  ],
+  "BuildYourOrder": [
+    "pages.home.order",
+    "editorial.labels.builder",
+    "designCopy.BuildYourOrder",
+    "editorial.labels.productDialog"
+  ],
+  "BrandValues": [
+    "pages.home.values"
+  ],
+  "HelpfulBeforeOrdering": [
+    "pages.home.help",
+    "editorial.labels.help"
+  ],
+  "SiteHeader": [
+    "designCopy.SiteHeader",
+    "editorial.labels.header"
+  ],
+  "SiteFooter": [
+    "pages.home.footer",
+    "pages.home.footer.primary",
+    "pages.home.footer.secondary",
+    "pages.home.footer.details.0",
+    "pages.home.footer.details.1",
+    "pages.home.footer.details.2",
+    "designCopy.SiteFooter"
+  ],
+  "productsPage": [
+    "pages.products",
+    "designCopy.productsPage"
+  ],
+  "customizePage": [
+    "pages.customize",
+    "pages.production"
+  ],
+  "ourWorkPage": [
+    "pages.home.work",
+    "pages.ourWork",
+    "designCopy.ourWorkPage"
+  ],
+  "productionPage": [
+    "pages.production"
+  ]
+}

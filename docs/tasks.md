@@ -2,6 +2,8 @@
 
 ## Active
 
+- 2026-10-09 Visual Editor: preview/content bridge, featured video/gallery/fabric/support fields, sidebar usability, backed-up draft-only sync and scoped checks implemented. Authenticated save/reload and sidebar/panel verification await current user sign-in. Do not publish during testing.
+
 - Implementation and local verification complete. Ready for user acceptance and first-login password change.
 
 ## Completed
@@ -34,3 +36,15 @@
 - Added administrator-only account creation, role assignment and custom roles in Settings.
 - Enforced Editor draft-only access and optional custom-role publishing in the API and UI.
 - Applied the preserving schema migration; all 18 tests, database rollback integration checks, type/lint/build and authenticated UI checks passed.
+
+- 2026-10-09: Implemented Fabrics sidebar categories and category-scoped Public cards through the existing visual editor and Save Draft flow; legacy content remains compatible. Added regression coverage for empty categories, membership, required pictures and persistence serialization.
+
+- Completed 2026-10-09: functional Featured Products video/gallery editor and direct Save Changes; real upload/save/reload/public-preview and responsive verification passed. Existing draft/publication workflow retained.
+
+## Whole-system verification — 2026-10-09
+
+Audit completed with explicit FAIL/UNVERIFIED coverage; this does not mark the whole system ready or implement repairs. Full matrix, evidence and exact follow-up checks: [SYSTEM_VERIFICATION_2026-10-09.md](SYSTEM_VERIFICATION_2026-10-09.md). Manual user checklist confirmations remain unchanged.
+
+## Repair follow-up — 2026-10-09
+
+Current known CMS/media/layout/lint defects repaired and retested in isolated production. Admin 31 unit tests and both builds/types/full lint pass; public has 3 unit and 16 browser regressions. See SYSTEM_REPAIR_2026-10-09.md and FIELD_VERIFICATION_REPAIR_2026-10-09.tsv for evidence and remaining coverage. Whole-system acceptance, exhaustive conditional/per-field coverage and deployed checks remain UNVERIFIED. Owner selected planner/demo scope with explicit limitations. Active publication upgrade is prepared read-only and tested in isolation; no active publication authorized. User manual checkboxes remain unchanged.

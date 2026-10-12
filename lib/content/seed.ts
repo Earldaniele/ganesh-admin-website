@@ -1,4 +1,4 @@
-import fixture from "./initial-content.json" with { type: "json" };
+import fixture from "./current-design.json" with { type: "json" };
 import type { ContentSnapshot } from "./schema";
 
 // Reviewed public-site fixture. Regenerate collections with scripts/import-public-fixture.ts.

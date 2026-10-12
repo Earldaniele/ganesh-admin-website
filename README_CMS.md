@@ -2,6 +2,16 @@
 
 The local CMS is connected to `ganesh_cms` on MariaDB 10.4.32. phpMyAdmin manages the database; it does not run Next.js. No Supabase, PostgreSQL, browser database credentials or image binaries in SQL are required.
 
+## Current workstation database connection (2026-10-08)
+
+This workstation runs two separate MariaDB installations. XAMPP MariaDB 10.4.32 now uses `127.0.0.1:3307`; the standalone MariaDB 12.2 service retains port 3306. The admin `.env.local`, phpMyAdmin server port and XAMPP Control Panel MySQL port are configured for 3307.
+
+The existing `ganesh_cms` database is stored under `C:\xampp\mysql\data\ganesh_cms`. Its InnoDB files also depend on shared files in `C:\xampp\mysql\data`; use a SQL export for backup rather than copying only the database folder. The migration source files are in `database/migrations`.
+
+The port fix preserved the existing data. Verified: app database credentials connect to XAMPP, all three migrations are applied, an admin account and draft/publication exist, phpMyAdmin displays the database, and `/api/public-content` returns HTTP 200. The old temporary credentials and screenshot credentials return HTTP 401; no account passwords were reset.
+
+Configuration backups and the elevated repair script/result are in `.local-setup/database-port-fix-20261008-232157` (git-ignored).
+
 ## Open the running apps
 
 - Public website: http://localhost:3000
@@ -122,3 +132,7 @@ As an Administrator, open Settings > Users & Roles. Create an account with a nam
 Editor can edit content, upload images and save private drafts. Administrator can also publish and manage accounts/roles. Add custom roles with an optional Can publish the website permission; custom roles never manage accounts. Built-in roles cannot be changed. Role updates take effect immediately and do not need content publication.
 
 Apply database/migrations/003_users_roles.sql with a schema-management database user when upgrading an existing installation. Runtime ganesh_app needs only its existing data privileges. Run node --experimental-strip-types scripts/verify-team-roles.ts for real MariaDB tests contained in a rolled-back transaction. No test accounts become visible or remain stored.
+
+## Featured Products video & gallery
+
+In Visual Editor → Home → Featured products · video & gallery → Edit, choose Full Sublimation Jersey (or another featured product). Edit its name, copy and detail text; upload/replace MP4 up to 32 MB. The player retains original audio with native playback, volume and fullscreen controls. Add multiple PNG/JPEG/WebP/static SVG files up to 5 MB each (up to 30 gallery images), edit captions and alt text, replace/remove/reorder them. Keep one image for the public fallback. Uploads have progress and error feedback. Save Changes validates and persists the open panel directly in MariaDB; uploads reside in the existing runtime media directory. Save & Publish then updates the public website through the existing publication/revalidation flow. Editors require an authorized publisher for that step.
