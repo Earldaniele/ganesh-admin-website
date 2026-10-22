@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request, { params }: { params: Promise<{ filename: string }> }) {
   const { filename } = await params;
-  if (!/^[a-f0-9-]{36}\.(png|jpg|webp|mp4)$/.test(filename)) return new Response(null, { status: 404 });
+  if (!/^[a-f0-9-]{36}\.(png|jpg|jpeg|webp|svg|avif|gif|ico|mp4|webm|mov)$/.test(filename)) return new Response(null, { status: 404 });
   const pool = getMySqlPool();
   if (!pool) return new Response(null, { status: 503 });
   try {

@@ -4,6 +4,8 @@ import { getMySqlPool, isMySqlConfigured, jsonColumn, type DbRow } from "@/lib/m
 import { requireAdmin } from "@/lib/auth/session";
 import { collectMediaIds } from "./media-references";
 import { reconcileCopyAliases } from "./copy-aliases";
+import { lockContentMedia, assetUrl, mediaOrigins } from "../media/library";
+import { findMediaReferences } from "./media-references";
 
 export const CMS_SITE_KEY = "ganesh-main";
 
@@ -61,11 +63,13 @@ export async function saveDraft(content: unknown, expectedVersion: number) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
+    const [rows] = await connection.execute("SELECT version, content FROM site_drafts WHERE site_key = ? FOR UPDATE", [CMS_SITE_KEY]) as unknown as [DbRow[], unknown];
+    try { await lockContentMedia(connection, parsed.data, process.env.ADMIN_SITE_ORIGIN || "http://localhost:3001"); }
+    catch (error) { await connection.rollback(); return { ok: false as const, status: 422, error: error instanceof Error ? error.message : "Invalid media reference." }; }
     for (const id of collectMediaIds(parsed.data)) {
       const [assets] = await connection.execute("SELECT id FROM media_assets WHERE id = ? AND deleted_at IS NULL FOR UPDATE", [id]) as unknown as [DbRow[], unknown];
       if (!assets.length) { await connection.rollback(); return { ok: false as const, status: 422, error: "An image reference is missing or deleted. Replace that image before saving." }; }
     }
-    const [rows] = await connection.execute("SELECT version, content FROM site_drafts WHERE site_key = ? FOR UPDATE", [CMS_SITE_KEY]) as unknown as [DbRow[], unknown];
     const currentVersion = rows[0] ? Number(rows[0].version) : 0;
     if (currentVersion !== expectedVersion) {
       await connection.rollback();
@@ -110,11 +114,16 @@ export async function publishDraft(expectedVersion: number) {
       return { ok: false as const, status: 422, error: "The draft content is invalid." };
     }
     publishedVersion = Number(draft.version);
+    const origin = process.env.ADMIN_SITE_ORIGIN || "http://localhost:3001";
+    await lockContentMedia(connection, content, origin);
     for (const id of collectMediaIds(content)) {
       const [assets] = await connection.execute("SELECT id FROM media_assets WHERE id = ? AND deleted_at IS NULL FOR UPDATE", [id]) as unknown as [DbRow[], unknown];
       if (!assets.length) { await connection.rollback(); return { ok: false as const, status: 422, error: "A referenced image is missing. Replace it before publishing." }; }
       await connection.execute("INSERT IGNORE INTO media_publications (asset_id) VALUES (?)", [id]);
     }
+    // Older content can refer to managed files by URL without an assetId.
+    const [media] = await connection.query("SELECT * FROM media_assets WHERE deleted_at IS NULL") as unknown as [DbRow[], unknown];
+    for (const asset of media) if (findMediaReferences(content, { id: String(asset.id), urls: [assetUrl(asset, origin), ...(asset.source_url ? [String(asset.source_url)] : [])] }, mediaOrigins(origin)).length) await connection.execute("INSERT IGNORE INTO media_publications (asset_id) VALUES (?)", [String(asset.id)]);
     await connection.execute(`INSERT INTO site_publications (site_key, schema_version, content, version, published_by) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE schema_version = VALUES(schema_version), content = VALUES(content), version = VALUES(version), published_by = VALUES(published_by), published_at = UTC_TIMESTAMP(6)`, [CMS_SITE_KEY, content.schemaVersion, JSON.stringify(content), publishedVersion, user.id]);
     const [revision] = await connection.execute("INSERT INTO content_revision_history (site_key, schema_version, content, version, published_by) VALUES (?, ?, ?, ?, ?)", [CMS_SITE_KEY, content.schemaVersion, JSON.stringify(content), publishedVersion, user.id]) as unknown as [{ insertId?: number }, unknown];
     await connection.execute("INSERT INTO audit_logs (actor, action, revision_id, metadata) VALUES (?, 'published', ?, ?)", [user.id, revision.insertId ?? null, JSON.stringify({ siteKey: CMS_SITE_KEY, version: publishedVersion })]);

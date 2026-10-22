@@ -47,3 +47,10 @@
 
 .cms-dialog { position: fixed; inset: 0; margin: auto; color: #4b1118; }
 .cms-dialog::backdrop { background: rgb(20 4 5 / .65); }
+
+.cms-fields .ve-media { display:grid; gap:12px; }
+.cms-fields .ve-media > img,.cms-fields .ve-media > video { width:100%; max-height:260px; object-fit:contain; background:#eee6da; }
+.cms-fields .ve-media label { display:grid; gap:6px; }
+.cms-fields .ve-media input { min-width:0; max-width:100%; padding:10px; border:1px solid #d9d0c3; border-radius:6px; }
+.cms-fields .ve-file { border:1px dashed #bb9285; padding:12px; }
+.cms-fields .ve-media progress { width:100%; }

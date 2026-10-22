@@ -1,0 +1,39 @@
+.ml-library { margin: 24px 0; padding: 22px; border: 1px solid #d7c3a8; border-radius: 10px; background: #fffdf8; color: #4b1118; font: 14px/1.5 var(--font-inter), sans-serif; }
+.ml-heading,.ml-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+.ml-heading h2 { margin: 0 0 6px; font-size: 24px; color: #4b1118; }
+.ml-heading p { margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: #9b1d24; }
+.ml-heading span,.ml-hint { color: #70665d; }
+.ml-heading > div { flex: 1 1 280px; }
+.ml-library button,.ml-dialog button { font: inherit; padding: 9px 12px; border: 1px solid #cdbfad; border-radius: 6px; background: #fffaf1; color: #4b1118; cursor: pointer; }
+.ml-library button:disabled,.ml-dialog button:disabled { cursor: not-allowed; opacity: .5; }
+.ml-library button:focus-visible,.ml-dialog button:focus-visible,.ml-upload:focus-within { outline: 3px solid #bd893a; outline-offset: 3px; }
+.ml-toolbar { margin: 20px 0; justify-content: start; align-items: end; }
+.ml-toolbar label,.ml-description { display: grid; gap: 5px; flex: 1 1 200px; }
+.ml-library input:not([type=file]),.ml-description input { font: inherit; min-width: 0; padding: 10px; border: 1px solid #d9d0c3; border-radius: 6px; color: #2b191b; background: white; }
+.ml-upload { position: relative; overflow: hidden; background: #9b1d24; color: #fffdf7; padding: 11px 16px; border-radius: 6px; cursor: pointer; }
+.ml-upload input { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+.ml-filters { display: flex; gap: 5px; flex-wrap: wrap; }
+.ml-filters button[aria-pressed=true],.ml-dialog .ml-primary { background: #9b1d24; color: white; border-color: #9b1d24; }
+.ml-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(170px,1fr)); gap: 14px; margin: 16px 0; }
+.ml-library .ml-card { display: grid; gap: 6px; min-width: 0; text-align: left; padding: 8px; background: white; }
+.ml-card strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.ml-card small { color: #70665d; }
+.ml-thumb { position: relative; aspect-ratio: 4/3; overflow: hidden; background: #eee7da; border-radius: 4px; }
+.ml-thumb img,.ml-thumb video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.ml-thumb span { position: absolute; bottom: 5px; left: 5px; background: #fffdf1ed; padding: 2px 6px; border-radius: 3px; font-size: 10px; }
+.ml-library progress { display: block; width: 100%; accent-color: #9b1d24; }
+.ml-error { padding: 12px; border-radius: 6px; background: #fff0ec; color: #7c281b; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ml-dialog { position: fixed; inset: 0; margin: auto; width: min(1000px,calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 24px; border: 1px solid #decba8; border-radius: 10px; background: #fffdf7; color: #4b1118; box-sizing: border-box; }
+.ml-dialog::backdrop { background: rgb(20 4 5 / .65); }
+.ml-dialog > header { display: flex; gap: 20px; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.ml-dialog > header h2 { font-size: 22px; margin: 0; }
+.ml-dialog .ml-library { margin: 0; border: 0; padding: 0; }
+.ml-preview { display: grid; place-items: center; background: #eee7da; border-radius: 6px; min-height: 100px; }
+.ml-preview img,.ml-preview video { width: auto; max-width: 100%; max-height: 45dvh; object-fit: contain; }
+.ml-preview-error { padding: 12px; font-size: 12px; color: #7c281b; }
+.ml-dialog dl { display: grid; grid-template-columns: 110px minmax(0,1fr); gap: 8px 16px; }
+.ml-dialog dt { color: #70665d; }.ml-dialog dd { margin: 0; overflow-wrap: anywhere; }
+.ml-usages { max-height: 180px; overflow: auto; padding-left: 20px; }
+.ml-usages li { padding: 5px 0; }.ml-usages code { display: block; overflow-wrap: anywhere; font-size: 12px; }
+.ml-description { margin-bottom: 15px; }
+@media(max-width:600px) { .ml-library,.ml-dialog { padding: 14px; }.ml-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }.ml-toolbar > label { flex-basis: 100%; }.ml-dialog dl { grid-template-columns: 85px minmax(0,1fr); gap: 8px; }.ml-heading h2 { font-size: 21px; } }

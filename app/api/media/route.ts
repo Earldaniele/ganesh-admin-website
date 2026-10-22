@@ -4,7 +4,16 @@ import { getMySqlPool } from "@/lib/mysql/db";
 import { requireAdmin } from "@/lib/auth/session";
 import { isSameOrigin } from "@/lib/auth/request";
 import { MAX_UPLOAD_BYTES, validateImage, validateVideo } from "@/lib/media/validate";
+import { listMedia } from "@/lib/media/library";
 export const runtime = "nodejs";
+
+export async function GET(request: Request) {
+  if (!await requireAdmin()) return Response.json({ error: "Sign in required." }, { status: 401 });
+  const pool = getMySqlPool();
+  if (!pool) return Response.json({ error: "CMS is not configured." }, { status: 503 });
+  try { return Response.json({ media: await listMedia(pool, new URL(request.url).origin) }, { headers: { "cache-control": "private, no-store" } }); }
+  catch { return Response.json({ error: "Cannot load Media Library. Check MariaDB and apply the media library migration." }, { status: 503 }); }
+}
 
 export async function POST(request: Request) {
   if (!isSameOrigin(request)) return Response.json({ error: "Untrusted request origin." }, { status: 403 });
@@ -49,7 +58,7 @@ export async function POST(request: Request) {
     await writeFile(absolutePath, validated.bytes, { flag: "wx" });
     fileWritten = true;
     await connection.beginTransaction();
-    await connection.execute("INSERT INTO media_assets (id, storage_path, mime_type, size_bytes, width, height, original_filename, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [assetId, relativePath, validated.mime, validated.bytes.length, validated.width, validated.height, file.name.slice(0, 255), user.id]);
+    await connection.execute("INSERT INTO media_assets (id, storage_path, mime_type, size_bytes, width, height, original_filename, created_by, alt_text) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [assetId, relativePath, validated.mime, validated.bytes.length, validated.width, validated.height, file.name.slice(0, 255), user.id, alt]);
     await connection.execute("INSERT INTO audit_logs (actor, action, asset_id, metadata) VALUES (?, 'media_uploaded', ?, ?)", [user.id, assetId, JSON.stringify({ mime: validated.mime, bytes: validated.bytes.length })]);
     await connection.commit();
     const origin = (process.env.CMS_MEDIA_ORIGIN || new URL(request.url).origin).replace(/\/$/, "");

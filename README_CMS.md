@@ -87,7 +87,7 @@ Saving a draft locks its row and compares the expected numeric version. Publishi
 
 Files live in `var/media/content` by default, with generated UUID filenames and DB metadata. PNG/JPEG/WebP/SVG are limited to 5 MB, decoded and validated server-side. Static SVG is rasterized to PNG; scripts, external references and unsafe SVG constructs are rejected. Dimensions and final byte size are recorded. Meaningful alt text is required.
 
-Replacement/removal of content never deletes a stored file. There is intentionally no destructive media purge endpoint. Any future cleanup must check the draft, publication AND revision history. Back up media with the database. Runtime media, local secrets, backups and QA artifacts are excluded from deployment tracing.
+Replacement/removal of content never deletes a stored file. Content Fields → Gallery / Media Library provides explicit deletion of unused files after checking drafts, publications, immutable revisions and bundled fallback snapshots. Back up media with the database. Runtime media, local secrets, backups and QA artifacts are excluded from deployment tracing.
 
 ## Backup, rollback and deployment
 
@@ -132,6 +132,18 @@ As an Administrator, open Settings > Users & Roles. Create an account with a nam
 Editor can edit content, upload images and save private drafts. Administrator can also publish and manage accounts/roles. Add custom roles with an optional Can publish the website permission; custom roles never manage accounts. Built-in roles cannot be changed. Role updates take effect immediately and do not need content publication.
 
 Apply database/migrations/003_users_roles.sql with a schema-management database user when upgrading an existing installation. Runtime ganesh_app needs only its existing data privileges. Run node --experimental-strip-types scripts/verify-team-roles.ts for real MariaDB tests contained in a rolled-back transaction. No test accounts become visible or remain stored.
+
+## Gallery / Media Library
+
+Content Fields includes a searchable image/video grid, type filters, multi-file uploads, transfer progress, previews, metadata and explicit deletion confirmation. Image/video controls in Content Fields and the Visual Editor can reuse a stored asset without another upload. Selections preserve field descriptions, focal points and video captions.
+
+Apply migration 005 with a migration identity (`pnpm db:migrate`), then run `pnpm media:import` with the normal application identity. The library also syncs when first opened and on Refresh library. Set PUBLIC_REPO_PATH if the public website differs from the sibling `../ganesh-website`. Existing public images/videos are copied to CMS_MEDIA_DIR and registered with source-URL aliases. Content URLs and original public-project files are preserved; deleting an unused imported copy removes the library copy. Deleted entries are not resurrected on refresh. Existing registered uploads are listed directly.
+
+Referenced HTTP(S) media unavailable locally are catalogued as external sources without fetching arbitrary remote URLs. Their size and original upload date are shown as unavailable. New uploads record actual size/date. Configure the public checkout during import to retain local copies of existing files. Deleting an external entry retains its original remote hosting.
+
+GET /api/media returns authenticated uncached metadata and exact usage paths. POST /api/media stores validated images/MP4s and descriptions. POST /api/media/sync registers existing media. DELETE /api/media/:id authenticates same-origin requests, locks against saves/publishes, checks IDs and URLs, and records deletion in the audit log. Revision/fallback references deliberately protect recovery and rendering. Unreferenced managed bytes are removed from disk; storage cleanup failures are reported explicitly. Upload limits remain 5 MB per image and 32 MB per MP4. SVG uploads are rasterized; trusted existing originals retain their format.
+
+Run `pnpm test:media` against the running local admin for database/storage/browser integration checks. It uses a temporary Editor identity, restores its own draft edits with optimistic concurrency, cleans up test media and never publishes. Screenshots and a draft recovery backup are stored in the ignored .visual-qa/media-library directory.
 
 ## Featured Products video & gallery
 

@@ -9,6 +9,8 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "db:migrate": "node --experimental-strip-types scripts/migrate.ts",
+    "media:import": "node --experimental-strip-types scripts/import-media.ts",
+    "test:media": "node --experimental-strip-types scripts/check-media-library.ts",
     "setup:local": "node --experimental-strip-types scripts/setup-local.ts",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "test:e2e:states": "node --test tests/cms-state.e2e.mjs",
