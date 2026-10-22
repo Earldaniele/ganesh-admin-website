@@ -51,6 +51,9 @@ export async function syncExistingMedia(pool: Pool, origin: string) {
     const [rows] = await connection.query("SELECT * FROM media_assets") as unknown as [DbRow[], unknown];
     const origins = mediaOrigins(origin);
     const known = new Set(rows.flatMap((row) => [mediaUrlKey(assetUrl(row, origin), origins), ...(row.source_url ? [mediaUrlKey(String(row.source_url), origins)] : [])]));
+    // Imports keep their original source URL when the website changes domains.
+    // The persisted fingerprint still identifies the already-imported source.
+    const knownSourceKeys = new Set(rows.filter((row) => row.source_key).map((row) => String(row.source_key)));
     const sources = new Map<string, { src: string; alt: string; file?: string }>();
     const publicRoot = path.resolve(/* turbopackIgnore: true */ process.env.PUBLIC_REPO_PATH || "../ganesh-website", "public");
     async function scan(folder: string, prefix = "") {
@@ -69,7 +72,8 @@ export async function syncExistingMedia(pool: Pool, origin: string) {
       sources.set(key, { ...sources.get(key), ...source });
     }
     for (const [key, source] of sources) {
-      if (known.has(key)) continue;
+      const sourceKey = createHash("sha256").update(key).digest("hex");
+      if (known.has(key) || knownSourceKeys.has(sourceKey)) continue;
       const url = new URL(source.src, process.env.PUBLIC_SITE_ORIGIN || "http://localhost:3000");
       if (!["http:", "https:"].includes(url.protocol)) continue;
       const extension = path.extname(url.pathname).slice(1).toLowerCase();
@@ -81,8 +85,8 @@ export async function syncExistingMedia(pool: Pool, origin: string) {
       try {
         const info = source.file ? await stat(source.file) : null;
         if (source.file) { await mkdir(path.join(mediaRoot(), "content"), { recursive: true }); await copyFile(source.file, path.join(mediaRoot(), relative)); copied = true; }
-        await connection.execute("INSERT INTO media_assets (id,storage_path,mime_type,size_bytes,original_filename,alt_text,source_url,source_key) VALUES (?,?,?,?,?,?,?,?)", [id, relative, mime, info?.size || 0, decodeURIComponent(path.basename(url.pathname)).slice(0,255), source.alt.slice(0,300), url.href, createHash("sha256").update(key).digest("hex")]);
-        known.add(key); added++;
+        await connection.execute("INSERT INTO media_assets (id,storage_path,mime_type,size_bytes,original_filename,alt_text,source_url,source_key) VALUES (?,?,?,?,?,?,?,?)", [id, relative, mime, info?.size || 0, decodeURIComponent(path.basename(url.pathname)).slice(0,255), source.alt.slice(0,300), url.href, sourceKey]);
+        known.add(key); knownSourceKeys.add(sourceKey); added++;
       } catch (error) { if (copied) await unlink(path.join(mediaRoot(), relative)).catch(() => undefined); throw error; }
     }
     return added;
