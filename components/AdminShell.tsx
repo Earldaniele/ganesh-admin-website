@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Icon, type IconName } from "@/components/Icon";
+import { useResponsiveDrawer } from "./useResponsiveDrawer";
 
 const primaryNav: { href: string; icon: IconName; label: string }[] = [
   { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
@@ -26,21 +27,23 @@ export function AdminShell({
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const sidebar = useRef<HTMLElement>(null);
+  const menu = useRef<HTMLButtonElement>(null);
+  const main = useRef<HTMLElement>(null);
+  const close = useCallback(() => setOpen(false), []);
+  useResponsiveDrawer({ open, close, drawer: sidebar, trigger: menu, background: main });
   const [profile, setProfile] = useState<{ displayName: string; role: string; roleName: string; permissions: { manageUsers: boolean } } | null>(null);
   useEffect(() => { fetch("/api/auth/me", { cache: "no-store" }).then(async (response) => { if (response.ok) setProfile(await response.json()); }).catch(() => undefined); }, []);
 
   return (
     <div className="admin-shell">
-      <button className="mobile-menu" onClick={() => setOpen(true)} type="button" aria-label="Open navigation">
-        <Icon name="menu" />
-      </button>
       {open ? <button className="shell-backdrop" aria-label="Close navigation" onClick={() => setOpen(false)} /> : null}
-      <aside className={`admin-sidebar${open ? " is-open" : ""}`}>
+      <aside ref={sidebar} id="admin-navigation" className={`admin-sidebar${open ? " is-open" : ""}`} role={open ? "dialog" : undefined} aria-modal={open ? true : undefined} aria-label="Admin navigation">
         <div className="sidebar-brand">
           <BrandLogo inverse />
           <button className="sidebar-close" onClick={() => setOpen(false)} type="button" aria-label="Close navigation"><Icon name="x" /></button>
         </div>
-        <nav className="sidebar-nav" aria-label="Admin navigation">
+        <nav className="sidebar-nav" aria-label="Admin navigation" onClick={(event) => { if ((event.target as HTMLElement).closest("a")) close(); }}>
           <p className="sidebar-label">Workspace</p>
           {primaryNav.map((item) => {
             const active = pathname === item.href || (item.href.startsWith("/settings") && pathname.startsWith("/settings"));
@@ -77,8 +80,9 @@ export function AdminShell({
           <button type="button" aria-label="Log out" onClick={async () => { await fetch("/api/auth/logout", { method: "POST" }); router.push("/login"); }}><Icon name="logout" /></button>
         </div>
       </aside>
-      <main className="admin-main">
+      <main ref={main} className="admin-main">
         <header className="page-header">
+          <button ref={menu} className="mobile-menu" onClick={() => setOpen(true)} type="button" aria-label="Open navigation" aria-expanded={open} aria-controls="admin-navigation"><Icon name="menu" /></button>
           <div>
             <p>{eyebrow}</p>
             <h1>{title}</h1>

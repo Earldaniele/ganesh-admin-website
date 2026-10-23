@@ -48,4 +48,10 @@
 .ml-deletion-note { background: #f4ecdf; border-radius: 6px; padding: 12px; margin: 0 0 14px; }
 .ml-action-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .ml-description { margin-bottom: 15px; }
-@media(max-width:600px) { .ml-library,.ml-dialog-body { padding: 16px; }.ml-dialog > header { padding: 12px 16px; }.ml-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }.ml-toolbar > label { flex-basis: 100%; }.ml-details-overview { grid-template-columns: minmax(0,1fr); gap: 18px; }.ml-dialog .ml-file-info { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }.ml-file-info > div:first-child { grid-column: 1/-1; }.ml-preview img,.ml-preview video { max-height: 28dvh; }.ml-heading h2 { font-size: 21px; } }
+.ml-heading > *, .ml-toolbar > *, .ml-dialog > header > *, .ml-file-info > div { min-width: 0; }
+.ml-library input:not([type=file]), .ml-description input { width: 100%; max-width: 100%; }
+.ml-heading, .ml-dialog, .ml-library { overflow-wrap: anywhere; }
+.ml-dialog button, .ml-library button, .ml-upload { min-height: 44px; max-width: 100%; }
+.ml-dialog > header button { flex-shrink: 0; }
+.ml-card strong { white-space: normal; overflow-wrap: anywhere; }
+@media(max-width:640px) { .ml-library,.ml-dialog-body { padding: 16px; }.ml-dialog > header { padding: 12px 16px; gap: 12px; }.ml-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }.ml-toolbar > label { flex-basis: 100%; }.ml-details-overview { grid-template-columns: minmax(0,1fr); gap: 18px; }.ml-dialog .ml-file-info { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }.ml-file-info > div:first-child { grid-column: 1/-1; }.ml-preview img,.ml-preview video { max-height: 28dvh; }.ml-heading h2 { font-size: 21px; } }
