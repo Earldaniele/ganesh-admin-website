@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export async function GET() {
   if (!await requireAdmin()) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
   try { return NextResponse.json(await getDraftContent(), { headers: { "cache-control": "private, no-store" } }); }
-  catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Cannot load the draft." }, { status: 503, headers: { "cache-control": "no-store" } }); }
+  catch (error) { console.error("Content load failed", error); return NextResponse.json({ error: "Your saved content could not be loaded. Please try again or contact your administrator." }, { status: 503, headers: { "cache-control": "no-store" } }); }
 }
 
 export async function PUT(request: Request) {

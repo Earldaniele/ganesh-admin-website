@@ -5,6 +5,7 @@ import type { Pool, PoolConnection } from "mysql2/promise";
 import { jsonColumn, type DbRow } from "../mysql/db.ts";
 import { collectMediaSources, findMediaReferences, mediaUrlKey } from "../content/media-references.ts";
 import type { LibraryMedia, MediaUsage } from "./types.ts";
+import { mediaPlacement, usageKind } from "./presentation.ts";
 
 export function mediaRoot() { return path.resolve(/* turbopackIgnore: true */ process.env.CMS_MEDIA_DIR || "var/media"); }
 export function mediaOrigins(origin: string) {
@@ -26,7 +27,10 @@ export async function snapshots(db: Pool | PoolConnection) {
   return result;
 }
 export function usagesFor(row: DbRow, content: Awaited<ReturnType<typeof snapshots>>, origin: string): MediaUsage[] {
-  return content.flatMap((snapshot) => findMediaReferences(snapshot.content, { id: String(row.id), urls: [assetUrl(row, origin), ...(row.source_url ? [String(row.source_url)] : [])] }, mediaOrigins(origin)).map((field) => ({ location: snapshot.location, path: field })));
+  return content.flatMap((snapshot) => findMediaReferences(snapshot.content, { id: String(row.id), urls: [assetUrl(row, origin), ...(row.source_url ? [String(row.source_url)] : [])] }, mediaOrigins(origin)).map((field) => {
+    const usage = { location: snapshot.location, path: field };
+    return { ...usage, kind: usageKind(usage), ...mediaPlacement(field, snapshot.content) };
+  }));
 }
 export async function listMedia(pool: Pool, origin: string): Promise<LibraryMedia[]> {
   const [rows] = await pool.query("SELECT * FROM media_assets WHERE deleted_at IS NULL ORDER BY created_at DESC, id") as unknown as [DbRow[], unknown];

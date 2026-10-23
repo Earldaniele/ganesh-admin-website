@@ -1,4 +1,5 @@
 "use client";
+import { adminMessage } from "@/lib/admin-presentation";
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -42,7 +43,7 @@ export default function LoginPage() {
     router.push("/dashboard");
     router.refresh();
     } catch {
-      setError("Cannot reach the admin server. Check that XAMPP MariaDB and the admin app are running.");
+      setError("Cannot connect. Please try again or contact your administrator.");
     } finally {
       setLoading(false);
     }
@@ -89,7 +90,7 @@ export default function LoginPage() {
               <label className="check-label"><input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} /><span>Remember me</span></label>
               <button type="button" className="text-button" onClick={handleForgotPassword}>Forgot password?</button>
             </div>
-            {error ? <p className="form-error" role="alert">{error}</p> : null}
+            {error ? <p className="form-error" role="alert">{adminMessage(error)}</p> : null}
             <button className="primary-button login-button" disabled={loading} type="submit">
               {loading ? <span className="spinner" /> : <Icon name="lock" />}
               {loading ? "Opening workspace…" : "Sign in to Admin"}

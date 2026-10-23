@@ -17,7 +17,7 @@ const order = target("order", "Order form", "#customize", "pages.home.order", "o
 const help = target("help", "Size guide and questions", "#help", "pages.home.help", "sizeGuides", "faqs", "editorial.labels.help");
 function mainTargets(page: PageId): EditorTarget[] {
   if (page === "home") return [
-    target("hero", "Hero / introduction", "#home", "pages.home.hero"),
+    target("hero", "Introduction", "#home", "pages.home.hero"),
     target("brand", "About Ganesh", ".brand-statement", "pages.home.brandStatement"),
     target("featured", "Featured products · video & gallery", "#featured", "featuredProducts", "designCopy.FeaturedProduct"),
     target("products", "Product showcase", "#products", "pages.home.whatWeMake", "products", "editorial.labels.productDialog"),
@@ -33,7 +33,7 @@ function mainTargets(page: PageId): EditorTarget[] {
   return [hero, target("steps", "Production steps", "#journey", ...pageCopy(page, "journeyKicker", "journeyTitleFirst", "journeyTitleSecond", "journeyCopy"), "productionSteps"), target("preparation", "Before production", "#before-production", ...pageCopy(page, "preparationKicker", "preparationTitleFirst", "preparationTitleSecond", "preparationCopy"), "editorial.productionPreparation", ...pageCopy(page, "buildOrder")), target("questions", "Questions and answers", "#production-questions", ...pageCopy(page, "questionsKicker", "questionsTitleFirst", "questionsTitleSecond", "questionsCopy"), "editorial.productionQuestions", ...pageCopy(page, "moreGuidance"))];
 }
 export function pageTargets(page: PageId): EditorTarget[] {
-  const seo = target("seo", "Search appearance (SEO)", "head", ...(page === "home" ? ["global.seo"] : pageCopy(page, "metaTitle", "metaDescription")), "global.favicon", "global.socialPreview");
+  const seo = target("seo", "Search appearance", "head", ...(page === "home" ? ["global.seo"] : pageCopy(page, "metaTitle", "metaDescription")), "global.favicon", "global.socialPreview");
   const groups: Record<string, string[]> = { header: ["SiteHeader"], footer: ["SiteFooter"], hero: [page === "home" ? "HeroHeader" : `${page}Page`], brand: ["BrandStatement"], featured: ["FeaturedProduct"], products: ["WhatWeMake"], fabrics: ["FabricExplorer"], production: ["ProductionProcess"], work: ["OurWork"], order: ["BuildYourOrder"], values: ["BrandValues"], help: ["HelpfulBeforeOrdering"], stories: ["ourWorkPage"], steps: ["productionPage"], preparation: [`${page}Page`], questions: ["productionPage"], cta: ["productsPage"] };
   return [header, ...mainTargets(page), target("support", "Support chat · preview copy", "[aria-label='Open support chat']", "supportCopy"), footer, seo].map((entry) => {
     const imported = (groups[entry.id] ?? []).flatMap((group) => (designInventory as Record<string, string[]>)[group] ?? []).filter((path) => !/^pages\.(products|customize|ourWork|production)$/.test(path));
@@ -47,8 +47,8 @@ export function editorTargets(page: PageId, content: ContentSnapshot): EditorTar
   if (["home", "products"].includes(page)) {
     result.push(target("fabric-category:new", "Add Category", "head", "fabricCategories", "fabrics"));
     fabricCategories(content).forEach((item) => {
-      result.push(target(`fabric-public:${item.id}`, `Publics · ${item.name}`, "head", "fabricCategories", "fabrics"));
-      result.push(target(`fabric-public-new:${item.id}`, "Add Public", "head", "fabricCategories", "fabrics"));
+      result.push(target(`fabric-public:${item.id}`, `Fabrics · ${item.name}`, "head", "fabricCategories", "fabrics"));
+      result.push(target(`fabric-public-new:${item.id}`, "Add fabric", "head", "fabricCategories", "fabrics"));
     });
   }
   if (page === "ourWork") content.workCategories.forEach((item, index) => result.push(target(`story:${item.id}`, `Story · ${item.label}`, `#${CSS.escape(item.slug)}`, `workCategories.${index}`)));

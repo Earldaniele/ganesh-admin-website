@@ -1,4 +1,5 @@
 "use client";
+import { adminMessage } from "@/lib/admin-presentation";
 import { reconcileCopyAliases } from "@/lib/content/copy-aliases";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -10,11 +11,15 @@ import { EditorDialog, EditorFields } from "./EditorFields";
 import FabricCatalogEditor from "./FabricCatalogEditor";
 import { fabricCategories, newFabricCategory, newFabricCard } from "@/lib/fabric-catalog";
 import { FeaturedProductsEditor } from "./FeaturedProductsEditor";
+import { useToast } from "./Toast";
+import { contentIssueSummary } from "@/lib/content/presentation";
 import "./visual-editor.css";
 
 type Session = { token: string; origin: string; expiresAt: number };
 type Panel = { target: EditorTarget; values: Record<string, unknown>; fabricCategoryId?: string; fabricCardId?: string };
 export default function VisualEditor() {
+  const notify = useToast();
+  const saving = useRef(false);
   const frame = useRef<HTMLIFrameElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const [content, setContent] = useState<ContentSnapshot | null>(null);
@@ -72,7 +77,9 @@ export default function VisualEditor() {
     fetch("/api/content", { cache: "no-store", signal: controller.signal }).then(async (response) => {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? "Cannot load the saved draft.");
-      setContent(contentSnapshotSchema.parse(result.content)); setVersion(result.version);
+      const parsed = contentSnapshotSchema.safeParse(result.content);
+      if (!parsed.success) throw new Error("Your saved content could not be opened. Please contact your administrator for help.");
+      setContent(parsed.data); setVersion(result.version);
       void startPreview();
     }).catch((failure) => { if (!controller.signal.aborted) setError(failure.message ?? "Cannot load the saved draft."); });
     return () => controller.abort();
@@ -88,7 +95,7 @@ export default function VisualEditor() {
   }, [session, startPreview]);
   useEffect(() => {
     if (!session || ready) return;
-    const timer = setTimeout(() => setPreviewError("The public preview did not respond. Check that the public app is running, then reconnect. Your edits are retained."), 20000);
+    const timer = setTimeout(() => setPreviewError("The website preview is unavailable. Try reconnecting. Your edits are still here."), 20000);
     return () => clearTimeout(timer);
   }, [session, ready]);
   function openPanel(target: EditorTarget) {
@@ -161,7 +168,7 @@ export default function VisualEditor() {
   }, [content, ready, page, editable, targets, post]);
   function validate(next: ContentSnapshot) {
     const parsed = contentSnapshotSchema.safeParse(next);
-    if (!parsed.success) throw new Error(parsed.error.issues.map((issue) => `${issue.path.join(" › ")}: ${issue.message}`).join("\n"));
+    if (!parsed.success) throw new Error(contentIssueSummary(parsed.error.issues, next));
     const errors = validateOrderBuilderConfig(parsed.data.orderBuilder);
     if (errors.length) throw new Error(errors.join(" "));
     return parsed.data;
@@ -174,13 +181,15 @@ export default function VisualEditor() {
       const reconciled = reconcileCopyAliases(content, next);
       const validated = validate(reconciled.content);
       setPast((history) => [...history.slice(-19), content]); setFuture([]);
-      setContent(validated); setDirty(true); setPanel(null); setError(""); setStatus("Changes applied to the visual preview. Linked header/footer copy updates together. Save Draft to keep them.");
+      setContent(validated); setDirty(true); setPanel(null); setError(""); setStatus("Preview updated. Save Draft to keep your changes.");
       post({ type: "restore-focus" });
       if (panel.fabricCategoryId) post({ type: "fabric-category", id: panel.fabricCategoryId });
-    } catch (failure) { setError(failure instanceof Error ? failure.message : "Please check the content."); }
+      notify("Changes applied successfully.");
+    } catch (failure) { const message = failure instanceof Error ? failure.message : "Please check the content."; setError(message); notify(adminMessage(message), "error"); }
   }
   async function save(publish: boolean, includePanel = false) {
-    if (!content || busy || uploading || (panel && !includePanel)) return;
+    if (!content || saving.current || busy || uploading || (panel && !includePanel)) return;
+    saving.current = true;
     setBusy(true); setError(""); setStatus("");
     try {
       let next = content;
@@ -190,42 +199,43 @@ export default function VisualEditor() {
       const result = await response.json();
       if (!response.ok) throw new Error(response.status === 409 ? "Another administrator saved a newer draft. Your changes are still here. Keep this tab open and coordinate with the other administrator before reloading." : result.error ?? "Save failed.");
       if (includePanel && panel) { setPast((history) => [...history.slice(-19), content]); setFuture([]); setContent(snapshot); setPanel(null); }
-      setContent(result.content ?? snapshot); setVersion(result.version); setDirty(false); setStatus("Private draft saved.");
+      setContent(result.content ?? snapshot); setVersion(result.version); setDirty(false); setStatus("Changes saved.");
       if (publish) {
         const response = await fetch("/api/content", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ version: result.version }) });
         const published = await response.json();
         if (!response.ok) throw new Error(published.error ?? "Draft saved; publication failed.");
-        setRefreshPending(!published.revalidated); setStatus(published.revalidated ? "Published. The public website is up to date." : "Published. Public cache refresh needs a retry.");
+        setRefreshPending(!published.revalidated); setStatus(published.revalidated ? "Your website is up to date." : "Changes published. Try refreshing the website again.");
       }
-    } catch (failure) { setError(failure instanceof Error ? failure.message : "Connection failed. Your edits are retained."); }
-    finally { setBusy(false); }
+      notify(publish ? "Published successfully." : includePanel ? "Changes saved successfully." : "Draft saved successfully.");
+    } catch (failure) { const message = failure instanceof Error ? failure.message : "Connection failed. Your edits are retained."; setError(message); notify(adminMessage(message), "error"); }
+    finally { saving.current = false; setBusy(false); }
   }
   function undo() {
     if (!content || !past.length || panel || busy || uploading) return;
-    setFuture((history) => [...history, content]); setContent(past[past.length - 1]); setPast((history) => history.slice(0, -1)); setDirty(true); setError(""); setStatus("Previous working draft restored. Save to keep this change.");
+    setFuture((history) => [...history, content]); setContent(past[past.length - 1]); setPast((history) => history.slice(0, -1)); setDirty(true); setError(""); setStatus("Previous change restored. Save to keep it.");
   }
   function redo() {
     if (!content || !future.length || panel || busy || uploading) return;
-    setPast((history) => [...history, content]); setContent(future[future.length - 1]); setFuture((history) => history.slice(0, -1)); setDirty(true); setError(""); setStatus("Change reapplied to the working draft.");
+    setPast((history) => [...history, content]); setContent(future[future.length - 1]); setFuture((history) => history.slice(0, -1)); setDirty(true); setError(""); setStatus("Change reapplied.");
   }
-  return <div className="ve-editor"><header className="ve-toolbar"><Link className="ve-brand" href="/dashboard">GANESH <span>ADMIN</span></Link><label>Page<select aria-label="Page" disabled={!!panel || busy || uploading} value={page} onChange={(event) => { setPage(event.target.value as PageId); setSelected("hero"); }}>{Object.entries(pages).map(([id, entry]) => <option key={id} value={id}>{entry.label}</option>)}</select></label><div className="ve-mode"><button aria-pressed={editable} onClick={() => setEditable(true)}>Edit</button><button aria-pressed={!editable} onClick={() => setEditable(false)}>Preview</button></div><label>Viewport<select aria-label="Viewport" value={device} onChange={(event) => setDevice(event.target.value)}><option value="desktop">Desktop</option><option value="tablet">Tablet · 768 px</option><option value="mobile">Mobile · 390 px</option></select></label><span className="ve-save-state">{dirty || panel ? "● Unsaved changes" : `Draft v${version}`}</span><button disabled={!content || busy || uploading || !!panel} onClick={() => void save(false)}>{busy ? "Saving…" : "Save Draft"}</button>{canPublish ? <button className="primary" disabled={!content || busy || uploading || !!panel} onClick={() => setPublishConfirm(true)}>Save &amp; Publish</button> : <span className="ve-save-state">Draft access · Ask an authorized team member to publish</span>}</header>
+  return <div className="ve-editor"><header className="ve-toolbar"><Link className="ve-brand" href="/dashboard">GANESH <span>ADMIN</span></Link><label>Page<select aria-label="Page" disabled={!!panel || busy || uploading} value={page} onChange={(event) => { setPage(event.target.value as PageId); setSelected("hero"); }}>{Object.entries(pages).map(([id, entry]) => <option key={id} value={id}>{entry.label}</option>)}</select></label><div className="ve-mode"><button aria-pressed={editable} onClick={() => setEditable(true)}>Edit</button><button aria-pressed={!editable} onClick={() => setEditable(false)}>Preview</button></div><label>Screen size<select aria-label="Screen size" value={device} onChange={(event) => setDevice(event.target.value)}><option value="desktop">Desktop</option><option value="tablet">Tablet</option><option value="mobile">Mobile</option></select></label><span className="ve-save-state">{dirty || panel ? "● Unsaved changes" : "All changes saved"}</span><button disabled={!content || busy || uploading || !!panel} onClick={() => void save(false)}>{busy ? "Saving…" : "Save Draft"}</button>{canPublish ? <button className="primary" disabled={!content || busy || uploading || !!panel} onClick={() => setPublishConfirm(true)}>Save &amp; Publish</button> : <span className="ve-save-state">Ask a team member with publishing access to make your changes live</span>}</header>
     <div className="ve-status" aria-live="polite"><button className="ve-sections-toggle" aria-expanded={showSections} onClick={() => setShowSections(!showSections)}>Sections</button><span>{pages[page].label} / {targets.find((t) => t.id === selected)?.label ?? "Page"} · {editable ? "Edit mode" : "Preview mode"}</span><span>{status}</span>{panel ? <span>{panel.values.featuredProducts ? "Save Changes keeps the open section." : "Apply or cancel the open panel before saving."}</span> : null}</div>
-    {error ? <div className="ve-error" role="alert">{error}</div> : null}
+    {error ? <div className="ve-error" role="alert">{adminMessage(error)}</div> : null}
     {refreshPending ? <button onClick={async () => { const response = await fetch("/api/content/revalidate", { method: "POST" }).catch(() => null); if (response?.ok) { setRefreshPending(false); setStatus("Public refresh completed."); } else setError("Public refresh still unavailable. Try again."); }}>Retry public refresh</button> : null}
     <div className="ve-workspace"><aside className={`ve-sidebar${showSections ? " ve-sidebar-open" : ""}`}><h1>Visual Editor</h1><p>{editable ? "Choose a section to find it in the preview. Select Edit to open its content controls." : "Customer view. Editing controls are hidden."}</p><label className="ve-section-search">Find a section<input type="search" placeholder="Search sections…" value={sectionQuery} onChange={(event) => setSectionQuery(event.target.value)} /></label><nav aria-label="Page sections">{sectionGroups.map((group) => <section className="ve-section-group" key={group.label}><h2>{group.label}</h2>{group.items.filter((section) => section.label.toLowerCase().includes(sectionQuery.toLowerCase())).map((section) => <div className={`ve-section-row${selected === section.id ? " selected" : ""}`} key={section.id}><button aria-current={selected === section.id ? "true" : undefined} onClick={() => { setSelected(section.id); post({ type: "scroll", selector: section.selector }); setShowSections(false); }}>{section.label}</button>{editable ? <button aria-label={`Edit ${section.label}`} disabled={!content || uploading || busy || !!panel} onClick={() => { openPanel(section); setShowSections(false); }}>Edit</button> : null}</div>)}</section>)}</nav>{!sections.some((s) => s.label.toLowerCase().includes(sectionQuery.toLowerCase())) ? <p>No matching sections.</p> : null}<div className="ve-history"><button disabled={!past.length || !!panel || busy || uploading} onClick={undo}>Undo</button><button disabled={!future.length || !!panel || busy || uploading} onClick={redo}>Redo</button></div></aside>
     <main className="ve-canvas-area"><div className={`ve-canvas ve-device-${device}`}>
       {!content ? <div className="ve-loading" role="status">Loading saved draft…</div> : null}
       {session ? <iframe ref={frame} title="Ganesh website visual preview" src={`${session.origin}/editor-preview?token=${encodeURIComponent(session.token)}`} allow="fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" referrerPolicy="no-referrer" /> : null}
-      {content && (!ready || previewError) ? <div className="ve-loading" role="status"><p>{previewError || "Connecting to the private public-site preview…"}</p>{previewError ? <button onClick={() => void startPreview()}>Reconnect preview</button> : null}</div> : null}
+      {content && (!ready || previewError) ? <div className="ve-loading" role="status"><p>{previewError ? adminMessage(previewError) : "Connecting to your website preview…"}</p>{previewError ? <button onClick={() => void startPreview()}>Reconnect preview</button> : null}</div> : null}
     </div></main>
-    {panel ? <aside ref={panelRef} className="ve-panel" aria-label="Edit content panel"><header><div><small>{pages[page].label} / EDIT CONTENT</small><h2>{panel.target.label}</h2></div><button aria-label="Cancel editing" disabled={uploading} onClick={() => { setPanel(null); setError(""); post({ type: "restore-focus" }); }}>×</button></header><p>{panel.values.featuredProducts ? "Save Changes stores this section in the database. Use Save & Publish afterward to update the public website." : "Apply updates the private preview. Save Draft keeps your changes in the database."}</p><fieldset disabled={uploading || busy}>{panel.values.fabricCategories && panel.values.fabrics ? <FabricCatalogEditor categories={panel.values.fabricCategories as NonNullable<ContentSnapshot["fabricCategories"]>} fabrics={panel.values.fabrics as ContentSnapshot["fabrics"]} initialCategoryId={panel.fabricCategoryId} initialCardId={panel.fabricCardId} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} requestRemove={(title, _item, apply) => setRemove({ title, apply })} onChange={(categories, fabrics, categoryId) => setPanel((current) => current ? { ...current, fabricCategoryId: categoryId ?? current.fabricCategoryId, values: { ...current.values, fabricCategories: categories, fabrics } } : current)} /> : null}{panel.values.featuredProducts ? <FeaturedProductsEditor value={panel.values.featuredProducts as NonNullable<ContentSnapshot["featuredProducts"]>} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} requestRemove={(title, _item, apply) => setRemove({ title, apply })} onChange={(featuredProducts) => setPanel((current) => current ? { ...current, values: { ...current.values, featuredProducts } } : current)} /> : null}{Object.entries(panel.values).filter(([path]) => path !== "featuredProducts" && (!panel.values.fabricCategories || !["fabricCategories", "fabrics"].includes(path))).map(([path, value]) => <EditorFields key={path} path={path} name={/^products\.\d+$/.test(path) ? "Product" : path.split(".").at(-1)!} value={value} template={getAt(initialContent, path)} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} onChange={(next) => setPanel((current) => current ? { ...current, values: { ...current.values, [path]: next } } : current)} requestRemove={(title, item, apply) => {
+    {panel ? <aside ref={panelRef} className="ve-panel" aria-label="Edit content panel"><header><div><small>{pages[page].label} / EDIT CONTENT</small><h2>{panel.target.label}</h2></div><button aria-label="Cancel editing" disabled={uploading} onClick={() => { setPanel(null); setError(""); post({ type: "restore-focus" }); }}>×</button></header><p>{panel.values.featuredProducts ? "Save Changes keeps your edits. Use Save & Publish when you are ready to make them live." : "Apply changes updates your preview. Save Draft keeps your edits for later."}</p><fieldset disabled={uploading || busy}>{panel.values.fabricCategories && panel.values.fabrics ? <FabricCatalogEditor categories={panel.values.fabricCategories as NonNullable<ContentSnapshot["fabricCategories"]>} fabrics={panel.values.fabrics as ContentSnapshot["fabrics"]} initialCategoryId={panel.fabricCategoryId} initialCardId={panel.fabricCardId} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} requestRemove={(title, _item, apply) => setRemove({ title, apply })} onChange={(categories, fabrics, categoryId) => setPanel((current) => current ? { ...current, fabricCategoryId: categoryId ?? current.fabricCategoryId, values: { ...current.values, fabricCategories: categories, fabrics } } : current)} /> : null}{panel.values.featuredProducts ? <FeaturedProductsEditor value={panel.values.featuredProducts as NonNullable<ContentSnapshot["featuredProducts"]>} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} requestRemove={(title, _item, apply) => setRemove({ title, apply })} onChange={(featuredProducts) => setPanel((current) => current ? { ...current, values: { ...current.values, featuredProducts } } : current)} /> : null}{Object.entries(panel.values).filter(([path]) => path !== "featuredProducts" && (!panel.values.fabricCategories || !["fabricCategories", "fabrics"].includes(path))).map(([path, value]) => <EditorFields key={path} path={path} name={/^products\.\d+$/.test(path) ? "Product" : path.split(".").at(-1)!} value={value} template={getAt(initialContent, path)} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} onChange={(next) => setPanel((current) => current ? { ...current, values: { ...current.values, [path]: next } } : current)} requestRemove={(title, item, apply) => {
       if (item && typeof item === "object" && "id" in item && path.startsWith("products")) {
         const references = content?.workCategories.filter((category) => category.story.relatedProductIds.includes(String(item.id))).map((category) => category.label) ?? [];
-        if (references.length) { setError(`Cannot remove ${title}: referenced by ${references.join(", ")}. Edit those Our Work stories and uncheck the related product first.`); return; }
+        if (references.length) { setError(`Cannot remove ${title}: included in ${references.join(", ")}. Edit those Our Work stories and uncheck the related product first.`); return; }
       }
       setRemove({ title, apply });
-    }} />)}</fieldset>{error ? <p className="ve-error" role="alert">{error}</p> : null}<footer><button disabled={uploading} onClick={() => { setPanel(null); setError(""); post({ type: "restore-focus" }); }}>Cancel</button><button disabled={uploading || busy} onClick={applyPanel}>Apply changes</button>{panel.values.featuredProducts ? <button className="primary" disabled={uploading || busy} onClick={() => void save(false, true)}>{busy ? "Saving…" : "Save Changes"}</button> : null}</footer></aside> : null}</div>
-    {publishConfirm ? <EditorDialog title="Publish the current draft?" onClose={() => setPublishConfirm(false)}><p>The exact current working draft will become visible on the public Ganesh website.</p><footer><button onClick={() => setPublishConfirm(false)}>Cancel</button><button className="primary" onClick={() => { setPublishConfirm(false); void save(true); }}>Publish changes</button></footer></EditorDialog> : null}
-    {remove ? <EditorDialog title={`Remove ${remove.title}?`} onClose={() => setRemove(null)}><p>This removes the item from the working draft. Uploaded media and saved revision history are retained.</p><footer><button onClick={() => setRemove(null)}>Cancel</button><button className="primary" onClick={() => { remove.apply(); setRemove(null); }}>Remove item</button></footer></EditorDialog> : null}
+    }} />)}</fieldset>{error ? <p className="ve-error" role="alert">{adminMessage(error)}</p> : null}<footer><button disabled={uploading} onClick={() => { setPanel(null); setError(""); post({ type: "restore-focus" }); }}>Cancel</button><button disabled={uploading || busy} onClick={applyPanel}>Apply changes</button>{panel.values.featuredProducts ? <button className="primary" disabled={uploading || busy} onClick={() => void save(false, true)}>{busy ? "Saving…" : "Save Changes"}</button> : null}</footer></aside> : null}</div>
+    {publishConfirm ? <EditorDialog title="Publish your changes?" onClose={() => setPublishConfirm(false)}><p>Your changes will be visible to everyone on the Ganesh website.</p><footer><button onClick={() => setPublishConfirm(false)}>Cancel</button><button className="primary" onClick={() => { setPublishConfirm(false); void save(true); }}>Publish changes</button></footer></EditorDialog> : null}
+    {remove ? <EditorDialog title={`Remove ${remove.title}?`} onClose={() => setRemove(null)}><p>This item will be removed when you publish. Its images and saved history will still be kept.</p><footer><button onClick={() => setRemove(null)}>Cancel</button><button className="primary" onClick={() => { remove.apply(); setRemove(null); }}>Remove item</button></footer></EditorDialog> : null}
   </div>;
 }

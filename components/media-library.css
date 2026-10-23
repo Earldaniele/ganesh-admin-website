@@ -23,17 +23,29 @@
 .ml-thumb span { position: absolute; bottom: 5px; left: 5px; background: #fffdf1ed; padding: 2px 6px; border-radius: 3px; font-size: 10px; }
 .ml-library progress { display: block; width: 100%; accent-color: #9b1d24; }
 .ml-error { padding: 12px; border-radius: 6px; background: #fff0ec; color: #7c281b; white-space: pre-wrap; overflow-wrap: anywhere; }
-.ml-dialog { position: fixed; inset: 0; margin: auto; width: min(1000px,calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 24px; border: 1px solid #decba8; border-radius: 10px; background: #fffdf7; color: #4b1118; box-sizing: border-box; }
+.ml-dialog { position: fixed; inset: 0; margin: auto; width: min(1000px,calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: hidden; padding: 0; border: 1px solid #decba8; border-radius: 10px; background: #fffdf7; color: #4b1118; box-sizing: border-box; font: 14px/1.5 var(--font-inter), sans-serif; }
+.ml-dialog[open] { display: flex; flex-direction: column; }
+.ml-dialog-details { width: min(780px,calc(100vw - 32px)); }
+.ml-dialog-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px; }
 .ml-dialog::backdrop { background: rgb(20 4 5 / .65); }
-.ml-dialog > header { display: flex; gap: 20px; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.ml-dialog > header { display: flex; flex-shrink: 0; gap: 20px; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #e7ddcf; }
 .ml-dialog > header h2 { font-size: 22px; margin: 0; }
 .ml-dialog .ml-library { margin: 0; border: 0; padding: 0; }
 .ml-preview { display: grid; place-items: center; background: #eee7da; border-radius: 6px; min-height: 100px; }
-.ml-preview img,.ml-preview video { width: auto; max-width: 100%; max-height: 45dvh; object-fit: contain; }
+.ml-preview img,.ml-preview video { width: auto; max-width: 100%; max-height: 280px; object-fit: contain; }
 .ml-preview-error { padding: 12px; font-size: 12px; color: #7c281b; }
-.ml-dialog dl { display: grid; grid-template-columns: 110px minmax(0,1fr); gap: 8px 16px; }
+.ml-details-overview { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 24px; align-items: start; }
+.ml-dialog .ml-file-info { display: grid; gap: 12px; margin: 0; }
+.ml-file-info dt { font-size: 12px; }.ml-file-info dd { font-weight: 500; }
 .ml-dialog dt { color: #70665d; }.ml-dialog dd { margin: 0; overflow-wrap: anywhere; }
-.ml-usages { max-height: 180px; overflow: auto; padding-left: 20px; }
-.ml-usages li { padding: 5px 0; }.ml-usages code { display: block; overflow-wrap: anywhere; font-size: 12px; }
+.ml-usage-section,.ml-history,.ml-details-actions { border-top: 1px solid #e7ddcf; margin-top: 22px; padding-top: 18px; }
+.ml-usage-section h3 { font-size: 16px; margin: 0 0 8px; }.ml-usage-section p { margin: 0 0 10px; }
+.ml-usages { margin: 0; padding: 0; list-style: none; overflow-wrap: anywhere; }
+.ml-usages > li { padding: 8px 0; }.ml-usages strong { font-size: 13px; }
+.ml-usages ul { padding-left: 20px; color: #70665d; }.ml-usages ul li { padding-top: 3px; }
+.ml-history summary { cursor: pointer; font-weight: 600; padding: 4px 0; }.ml-history h4 { margin: 16px 0 4px; }
+.ml-history summary:focus-visible { outline: 3px solid #bd893a; outline-offset: 3px; }
+.ml-deletion-note { background: #f4ecdf; border-radius: 6px; padding: 12px; margin: 0 0 14px; }
+.ml-action-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .ml-description { margin-bottom: 15px; }
-@media(max-width:600px) { .ml-library,.ml-dialog { padding: 14px; }.ml-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }.ml-toolbar > label { flex-basis: 100%; }.ml-dialog dl { grid-template-columns: 85px minmax(0,1fr); gap: 8px; }.ml-heading h2 { font-size: 21px; } }
+@media(max-width:600px) { .ml-library,.ml-dialog-body { padding: 16px; }.ml-dialog > header { padding: 12px 16px; }.ml-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }.ml-toolbar > label { flex-basis: 100%; }.ml-details-overview { grid-template-columns: minmax(0,1fr); gap: 18px; }.ml-dialog .ml-file-info { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }.ml-file-info > div:first-child { grid-column: 1/-1; }.ml-preview img,.ml-preview video { max-height: 28dvh; }.ml-heading h2 { font-size: 21px; } }

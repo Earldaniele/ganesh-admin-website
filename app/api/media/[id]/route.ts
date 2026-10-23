@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth/session";
 import { isSameOrigin } from "@/lib/auth/request";
 import { getMySqlPool, type DbRow } from "@/lib/mysql/db";
 import { mediaRoot, snapshots, usagesFor } from "@/lib/media/library";
+import { deletionRestriction } from "@/lib/media/presentation";
 export const runtime = "nodejs";
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!isSameOrigin(request)) return Response.json({ error: "Untrusted request origin." }, { status: 403 });
@@ -25,7 +26,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const asset = rows[0];
     if (!asset) { await connection.rollback(); return Response.json({ error: "Media no longer exists." }, { status: 404 }); }
     const usages = usagesFor(asset, await snapshots(connection), new URL(request.url).origin);
-    if (usages.length) { await connection.rollback(); return Response.json({ error: "This file is still referenced. Remove its draft and published references first. Revision and website fallback references are retained for recovery.", usages }, { status: 409 }); }
+    if (usages.length) { await connection.rollback(); return Response.json({ error: deletionRestriction(usages, String(asset.mime_type).startsWith("video/") ? "video" : "image"), usages }, { status: 409 }); }
     if (!String(asset.storage_path).startsWith("external/")) {
       const storage = String(asset.storage_path);
       if (!/^content\/[a-f0-9-]{36}\.(png|jpg|jpeg|webp|svg|avif|gif|ico|mp4|webm|mov)$/i.test(storage)) throw new Error("Invalid storage path.");

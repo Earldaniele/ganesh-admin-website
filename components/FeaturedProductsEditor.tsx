@@ -1,4 +1,5 @@
 "use client";
+import { adminMessage } from "@/lib/admin-presentation";
 import { useState } from "react";
 import type { ContentSnapshot } from "@/lib/content/schema";
 import { imageUploadError, uploadMedia } from "@/lib/media/upload";
@@ -42,8 +43,8 @@ export function FeaturedProductsEditor(props: Props) {
     <fieldset><legend>Image gallery · {product.gallery.length}/30</legend>
       <label className="ve-file">Add multiple images · up to 5 MB each<input type="file" multiple accept="image/png,image/jpeg,image/webp,image/svg+xml" disabled={busy} onChange={(e) => { const files = Array.from(e.target.files ?? []); e.target.value = ""; void uploadGallery(files); }} /></label>
       {busy ? <progress aria-label="Gallery upload progress" max={100} value={progress} /> : null}
-      {message ? <p role="status">{message}</p> : null}{error ? <p role="alert">{error}</p> : null}
-      <p>Keep at least one image for the public fallback. Removing an image here retains its stored file and revision history.</p>
+      {message ? <p role="status">{message}</p> : null}{error ? <p role="alert">{adminMessage(error)}</p> : null}
+      <p>Keep at least one image to show when the video cannot play. Removing an image here keeps the file in your library.</p>
       {product.gallery.map((item, index) => <section className="ve-gallery-item" key={item.id}>
         <label>Image caption<input maxLength={160} value={item.label} onChange={(e) => change({ ...product, gallery: product.gallery.map((g) => g.id === item.id ? { ...g, label: e.target.value } : g) })} /></label>
         <MediaField value={item.image} publicOrigin={props.publicOrigin} onBusy={props.onBusy} onChange={(image) => change({ ...product, gallery: product.gallery.map((g) => g.id === item.id ? { ...g, image: image as Product["image"] } : g) })} />

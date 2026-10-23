@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { ToastProvider } from "@/components/Toast";
 
 const montserrat = localFont({
   src: "./fonts/Montserrat-Variable.ttf",
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${montserrat.variable} ${sourceSerif.variable} ${titanOne.variable} ${publicBody.variable} ${publicDisplay.variable}`}>
-      <body>{children}</body>
+      <body><ToastProvider>{children}</ToastProvider></body>
     </html>
   );
 }

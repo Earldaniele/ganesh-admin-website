@@ -10,5 +10,5 @@ export default async function SettingsPage({ params }: PageProps<"/settings/[sec
   const user = await getAdminUser();
   if (!user) redirect("/login");
   if (section === "users" && !user.permissions.manageUsers) redirect("/settings/account");
-  return <SettingsClient section={section as SettingsSection} canManageUsers={user.permissions.manageUsers} />;
+  return <SettingsClient section={section as SettingsSection} canManageUsers={user.permissions.manageUsers} publicOrigin={process.env.PUBLIC_SITE_ORIGIN || "http://localhost:3000"} />;
 }

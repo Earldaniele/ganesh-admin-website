@@ -1,5 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { adminMessage } from "@/lib/admin-presentation";
+import { useEffect, useRef, useState } from "react";
+import { useToast } from "./Toast";
 import type { Role, TeamUser } from "@/lib/auth/roles";
 import "./team-settings.css";
 
@@ -13,6 +15,8 @@ async function fetchTeam(): Promise<Team> {
 }
 
 export function TeamSettings() {
+  const notify = useToast();
+  const saving = useRef(false);
   const [team, setTeam] = useState<Team | null>(null);
   const [account, setAccount] = useState(emptyAccount);
   const [selectedRoles, setSelectedRoles] = useState<Record<string, string>>({});
@@ -33,21 +37,23 @@ export function TeamSettings() {
     window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
   async function save(url: string, method: string, body: unknown, success: string, reset: () => void) {
-    if (busy) return;
+    if (saving.current || busy) return;
+    saving.current = true;
     setBusy(true); setError(""); setMessage("");
     try {
       const response = await fetch(url, { method, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not save changes.");
       reset(); setMessage(success);
+      notify("Changes saved successfully.");
       await load();
-    } catch (failure) { setError(failure instanceof Error ? failure.message : "Connection failed. Please try again."); }
-    finally { setBusy(false); }
+    } catch (failure) { const message = failure instanceof Error ? failure.message : "Connection failed. Please try again."; setError(message); notify(adminMessage(message), "error"); }
+    finally { saving.current = false; setBusy(false); }
   }
   function resetRole() { setEditingRole(null); setRoleForm({ name: "", canPublish: false }); }
   return <div className="team-settings">
     <div className="team-intro"><h2>Users &amp; Roles</h2><p>Give your team their own sign-in. Account and role changes take effect immediately.</p></div>
-    {error ? <div className="team-notice team-error" role="alert">{error}<button type="button" disabled={busy} onClick={() => void load().then(() => setError("")).catch((failure) => setError(failure.message))}>Refresh list</button></div> : null}
+    {error ? <div className="team-notice team-error" role="alert">{adminMessage(error)}<button type="button" disabled={busy} onClick={() => void load().then(() => setError("")).catch((failure) => setError(failure.message))}>Refresh list</button></div> : null}
     {message ? <p className="team-notice" role="status">{message}</p> : null}
     {!team ? <p role="status">{error ? "Accounts are unavailable." : "Loading accounts and roles…"}</p> : <>
       <section className="settings-card"><div className="settings-card-heading"><div><h3>Create account</h3><p>Choose a role and a password for the new team member. Share their sign-in details with them directly.</p></div></div>

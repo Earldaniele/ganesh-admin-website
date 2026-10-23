@@ -1,4 +1,5 @@
-export type MediaUsage = { location: string; path: string };
+export type MediaUsageKind = "website" | "changes" | "history" | "backup" | "other";
+export type MediaUsage = { location: string; path: string; kind?: MediaUsageKind; page?: string; section?: string };
 export type LibraryMedia = {
   assetId: string; src: string; alt: string; filename: string; mimeType: string;
   size: number | null; uploadedAt: string | null; width: number | null; height: number | null;

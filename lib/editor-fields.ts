@@ -6,6 +6,11 @@ const internalFields = new Set([
 ]);
 
 const labels: Record<string, string> = {
+  global: "Business and website details", pages: "Website pages", editorial: "Page text and images", designCopy: "Additional page text",
+  designMedia: "Saved images", workCategories: "Our Work stories", productionSteps: "Production steps", brandValues: "Our values",
+  fabricCategories: "Fabric categories", sizeGuides: "Size guides", faqs: "Common questions", ourWork: "Our Work", home: "Home",
+  id: "Item", categoryId: "Category", assetId: "Media file", schemaVersion: "Website settings", src: "File link", href: "Link address", slug: "Page address",
+  labels: "Page labels", images: "Page images", focalPoint: "Image position", alt: "Image description (alt text)", source: "Use business detail", external: "Open in a new tab", orderBuilderProduct: "Product name in order form",
   nav: "Menu text", label: "Text", primary: "Main button", secondary: "Second button",
   link: "Button text", quoteLabel: "Quote button text", hero: "Main section",
   eyebrow: "Introductory text", kicker: "Introductory text", copy: "Description",
@@ -15,7 +20,7 @@ const labels: Record<string, string> = {
   heroTitleFirst: "Heading first line", heroTitleSecond: "Heading second line",
   heroLead: "Description", heroCaption: "Image caption",
   heroCaptionFirst: "Image caption first line", heroCaptionSecond: "Image caption second line",
-  seo: "Search appearance (SEO)", metaTitle: "Search title", metaDescription: "Search description",
+  seo: "Search appearance", metaTitle: "Search title", metaDescription: "Search description",
   socialPreview: "Sharing image", favicon: "Browser icon", legal: "Footer small print",
   productionHero: "Main image", customizeHero: "Main image", productDialog: "Product details text",
   brandStatement: "About Ganesh", whatWeMake: "Products introduction",
@@ -30,7 +35,7 @@ const labels: Record<string, string> = {
   featuredProducts: "Featured products", poster: "Video poster image", video: "Product video",
   supportCopy: "Support chat copy", prompts: "Suggested questions", reply: "Sample reply", thinkingLabel: "Preparing reply text", composerPlaceholder: "Disabled chat input text",
   gallery: "Image gallery", tagline: "Product tagline", benefits: "Fabric benefits", recommendedUses: "Recommended uses",
-  HeroHeader: "Hero copy", FeaturedProduct: "Featured product controls", WhatWeMake: "Product showcase copy",
+  HeroHeader: "Introduction text", FeaturedProduct: "Featured product controls", WhatWeMake: "Product showcase copy",
   FabricExplorer: "Fabric explorer controls", BuildYourOrder: "Order form controls", SiteHeader: "Header controls", SiteFooter: "Footer copy",
   productsPage: "Products page copy", customizePage: "Customize page copy", ourWorkPage: "Our Work page copy", productionPage: "Production page copy",
 };
