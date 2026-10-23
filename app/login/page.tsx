@@ -62,7 +62,7 @@ export default function LoginPage() {
         <div className="login-story-copy">
           <span className="story-kicker">Your craft, clearly managed</span>
           <h1>Shape the story behind every stitch.</h1>
-          <p>Review your website, refine its content, and keep every customer-facing detail on brand.</p>
+
         </div>
         <p className="login-story-foot">Made with purpose. Crafted to last.</p>
       </section>
@@ -72,7 +72,7 @@ export default function LoginPage() {
           <div className="login-heading">
             <p className="eyebrow">Ganesh Admin</p>
             <h2>Welcome back</h2>
-            <p>Sign in to continue to your website workspace.</p>
+            <p>Sign in to manage your website.</p>
           </div>
           <form onSubmit={handleSubmit} noValidate>
             <label className="field-label" htmlFor="email">Email address</label>
@@ -93,10 +93,10 @@ export default function LoginPage() {
             {error ? <p className="form-error" role="alert">{adminMessage(error)}</p> : null}
             <button className="primary-button login-button" disabled={loading} type="submit">
               {loading ? <span className="spinner" /> : <Icon name="lock" />}
-              {loading ? "Opening workspace…" : "Sign in to Admin"}
+              {loading ? "Opening workspace…" : "Sign in"}
             </button>
           </form>
-          <p className="prototype-note"><span /> Sign in with an administrator account configured in MySQL.</p>
+          <p className="prototype-note"><span /> Need access? Contact your administrator.</p>
         </div>
         <p className="login-copyright">© 2026 Ganesh Garments. Admin workspace.</p>
       </section>

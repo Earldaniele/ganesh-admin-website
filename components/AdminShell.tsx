@@ -11,7 +11,7 @@ import { useResponsiveDrawer } from "./useResponsiveDrawer";
 const primaryNav: { href: string; icon: IconName; label: string }[] = [
   { href: "/dashboard", icon: "dashboard", label: "Dashboard" },
   { href: "/editor", icon: "edit", label: "Visual Editor" },
-  { href: "/content", icon: "file", label: "Content fields" },
+  { href: "/content", icon: "file", label: "Content" },
   { href: "/settings/general", icon: "settings", label: "Settings" },
 ];
 
@@ -54,14 +54,14 @@ export function AdminShell({
                   <span>{item.label}</span>
                   {item.label === "Settings" ? <Icon className="nav-chevron" name="chevron-down" /> : null}
                 </Link>
-                {item.label === "Content fields" && active ? <div className="sidebar-subnav"><Link href="/content#order-builder">Order Builder options</Link></div> : null}
+                {item.href === "/content" && active ? <div className="sidebar-subnav"><Link href="/content#order-builder">Order options</Link></div> : null}
                 {item.label === "Settings" && pathname.startsWith("/settings") ? (
                   <div className="sidebar-subnav">
                     <Link className={pathname.endsWith("/general") ? "active" : ""} href="/settings/general">General</Link>
                     <Link className={pathname.endsWith("/branding") ? "active" : ""} href="/settings/branding">Branding</Link>
-                    <Link className={pathname.endsWith("/contact") ? "active" : ""} href="/settings/contact">Contact information</Link>
+                    <Link className={pathname.endsWith("/contact") ? "active" : ""} href="/settings/contact">Contact</Link>
                     {profile?.permissions.manageUsers ? <Link className={pathname.endsWith("/users") ? "active" : ""} href="/settings/users">Users &amp; Roles</Link> : null}
-                    <Link className={pathname.endsWith("/account") ? "active" : ""} href="/settings/account">Account / Password</Link>
+                    <Link className={pathname.endsWith("/account") ? "active" : ""} href="/settings/account">Account</Link>
                   </div>
                 ) : null}
               </div>

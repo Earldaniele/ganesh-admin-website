@@ -37,26 +37,43 @@ export function usagesFor(row: DbRow, content: Awaited<ReturnType<typeof snapsho
     return { ...usage, kind: usageKind(usage), ...mediaPlacement(field, snapshot.content) };
   }));
 }
-export async function listMedia(pool: Pool, origin: string): Promise<LibraryMedia[]> {
-  const [rows] = await pool.query("SELECT * FROM media_assets WHERE deleted_at IS NULL ORDER BY created_at DESC, id") as unknown as [DbRow[], unknown];
-  const content = await snapshots(pool);
-  return rows.map((row) => ({
+export function libraryItem(row: DbRow, origin: string): LibraryMedia {
+  return {
     assetId: String(row.id), src: assetUrl(row, origin), alt: String(row.alt_text || ""), filename: String(row.original_filename),
     mimeType: String(row.mime_type), size: String(row.storage_path).startsWith("external/") ? null : Number(row.size_bytes),
     uploadedAt: row.source_url ? null : new Date(row.created_at as string).toISOString(),
     width: row.width ? Number(row.width) : null, height: row.height ? Number(row.height) : null,
-    existing: Boolean(row.source_url), usages: usagesFor(row, content, origin),
-  }));
+    existing: Boolean(row.source_url), usages: [],
+    thumbnail: String(row.mime_type).startsWith("image/") && !String(row.storage_path).startsWith("external/") ? `/api/media/${row.id}/thumbnail` : undefined,
+  };
+}
+/** Listing never reads content/history. Usage is loaded for one asset on demand. */
+export async function listMedia(pool: Pool, origin: string, options: { search?: string; type?: string; page?: number; pageSize?: number } = {}) {
+  const page = Math.max(1, Math.min(1000000, Math.trunc(options.page || 1)));
+  const pageSize = Math.max(1, Math.min(100, Math.trunc(options.pageSize || 36)));
+  const clauses = ["deleted_at IS NULL"], values: string[] = [];
+  if (options.type === "image" || options.type === "video") { clauses.push("mime_type LIKE ?"); values.push(`${options.type}/%`); }
+  const search = options.search?.trim().slice(0, 200);
+  if (search) {
+    // '=' is an explicit escape character, including for literal '%' and '_'.
+    clauses.push("(original_filename LIKE ? ESCAPE '=' OR alt_text LIKE ? ESCAPE '=' OR mime_type LIKE ? ESCAPE '=')");
+    const pattern = `%${search.replace(/[=%_]/g, "=$&")}%`; values.push(pattern, pattern, pattern);
+  }
+  const where = clauses.join(" AND ");
+  const [counts] = await pool.query(`SELECT COUNT(*) AS total FROM media_assets WHERE ${where}`, values) as unknown as [DbRow[], unknown];
+  const [rows] = await pool.query(`SELECT id, storage_path, source_url, alt_text, original_filename, mime_type, size_bytes, created_at, width, height FROM media_assets WHERE ${where} ORDER BY created_at DESC, id LIMIT ? OFFSET ?`, [...values, pageSize, (page - 1) * pageSize]) as unknown as [DbRow[], unknown];
+  return { media: rows.map((row) => libraryItem(row, origin)), total: Number(counts[0].total), page, pageSize };
 }
 const mimeTypes: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp", svg: "image/svg+xml", avif: "image/avif", gif: "image/gif", ico: "image/x-icon", mp4: "video/mp4", webm: "video/webm", mov: "video/quicktime" };
+export class MediaSyncInProgress extends Error {}
 
 /** Idempotently catalogue original website media without rewriting any content URLs. */
 export async function syncExistingMedia(pool: Pool, origin: string) {
   const connection = await pool.getConnection();
   let added = 0;
   try {
-    const [lock] = await connection.query("SELECT GET_LOCK('ganesh_media_import', 10) AS acquired") as unknown as [DbRow[], unknown];
-    if (Number(lock[0].acquired) !== 1) throw new Error("Media sync is already running. Retry shortly.");
+    const [lock] = await connection.query("SELECT GET_LOCK('ganesh_media_import', 0) AS acquired") as unknown as [DbRow[], unknown];
+    if (Number(lock[0].acquired) !== 1) throw new MediaSyncInProgress("Media discovery is already running.");
     const [rows] = await connection.query("SELECT * FROM media_assets") as unknown as [DbRow[], unknown];
     const origins = mediaOrigins(origin);
     const known = new Set(rows.flatMap((row) => [mediaUrlKey(assetUrl(row, origin), origins), ...(row.source_url ? [mediaUrlKey(String(row.source_url), origins)] : [])]));

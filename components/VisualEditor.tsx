@@ -15,6 +15,8 @@ import { contentIssueSummary } from "@/lib/content/presentation";
 import { useResponsiveDrawer } from "./useResponsiveDrawer";
 import EditorDraftDialogs from "./EditorDraftDialogs";
 import { contentChanges, sameContent, undoContentChange, workingPreview, reconcileEditorCopy, type EditorChange, type SavedEditorDraft, type SavedEditorDraftSummary } from "@/lib/editor-changes";
+import { privateMediaLinks, PreviewMediaLoader, readPreviewMedia } from "@/lib/media/preview";
+import { MediaContentContext } from "./MediaLibrary";
 import "./visual-editor.css";
 
 type Session = { token: string; origin: string; expiresAt: number };
@@ -55,11 +57,18 @@ export default function VisualEditor() {
   const [refreshPending, setRefreshPending] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
+  const [previewConnection, setPreviewConnection] = useState(0);
   const [selected, setSelected] = useState("hero");
   const [panel, setPanel] = useState<Panel | null>(null);
   const [publishConfirm, setPublishConfirm] = useState(false);
   const [remove, setRemove] = useState<{ title: string; apply: () => void } | null>(null);
-  const mediaCache = useRef(new Map<string, string>());
+  const mediaLoader = useRef<PreviewMediaLoader | null>(null);
+  if (!mediaLoader.current) mediaLoader.current = new PreviewMediaLoader(readPreviewMedia);
+  const previewLinks = useRef(new Map<string, string>());
+  const sentMedia = useRef(new Set<string>());
+  const previewPage = useRef(page);
+  const previewRevision = useRef(0);
+  const requestMedia = useRef<(sources: string[]) => void>(() => {});
   const previousPreview = useRef<ContentSnapshot | undefined>(undefined);
   const targets = useMemo(() => content ? editorTargets(page, content) : [], [page, content]);
   const sections = pageTargets(page);
@@ -143,7 +152,8 @@ export default function VisualEditor() {
       if (!session || event.source !== frame.current?.contentWindow || event.origin !== session.origin) return;
       const data = event.data;
       if (!data || typeof data !== "object" || data.source !== "ganesh-public-preview" || data.token !== session.token) return;
-      if (data.type === "ready") { setReady(true); setPreviewError(""); }
+      if (data.type === "ready") { sentMedia.current.clear(); setPreviewConnection(value => value + 1); setReady(true); setPreviewError(""); }
+      if (data.type === "media-needed" && Array.isArray(data.sources) && data.page === previewPage.current) requestMedia.current(data.sources.filter((src: unknown): src is string => typeof src === "string").slice(0, 200));
       if (data.type === "error" && typeof data.message === "string") setPreviewError(data.message.slice(0, 500));
       if (data.type === "select" && typeof data.id === "string") { const target = targets.find((entry) => entry.id === data.id); if (target) openPanel(target); }
       if (data.type === "navigate" && typeof data.page === "string" && Object.hasOwn(pages, data.page)) { setPage(data.page as PageId); setSelected("hero"); setPanel(null); }
@@ -153,38 +163,41 @@ export default function VisualEditor() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, targets, content, editable, busy, uploading, panel]);
   useEffect(() => {
-    if (!ready || !content) return;
-    let cancelled = false;
+    const revision = ++previewRevision.current;
+    if (!ready || !content) { mediaLoader.current?.retain(new Set()); requestMedia.current = () => {}; return; }
     const preview = workingPreview(content, previousPreview.current);
     previousPreview.current = preview;
-    // Private uploaded media is read by the authenticated admin, never by the
-    // public image optimizer. Only in-memory data URLs enter the preview frame.
-    async function sync() {
-      const sources = new Set<string>();
-      const mediaLinks = new Map<string, string>();
-      function visit(value: unknown) {
-        if (!value || typeof value !== "object") return;
-        if ("src" in value && typeof value.src === "string") {
-          const url = new URL(value.src, location.origin);
-          if (url.origin === location.origin && url.pathname.startsWith("/media/content/")) { sources.add(url.href); mediaLinks.set(value.src, url.href); }
-        }
-        Object.values(value).forEach(visit);
-      }
-      visit(preview);
-      try {
-        await Promise.all([...sources].map(async (src) => {
-          if (mediaCache.current.has(src)) return;
-          const response = await fetch(src, { cache: "no-store" });
-          if (!response.ok) throw new Error("A draft image could not load. Sign in again or replace the image.");
-          const blob = await response.blob();
-          const data = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = reject; reader.readAsDataURL(blob); });
-          mediaCache.current.set(src, data);
-        }));
-        if (!cancelled) { setPreviewError(""); post({ type: "snapshot", content: preview, page, editable, targets: targets.map(({ id, label, selector }) => ({ id, label, selector })), media: Object.fromEntries([...mediaLinks].map(([original, src]) => [original, mediaCache.current.get(src)])) }); }
-      } catch (failure) { if (!cancelled) setPreviewError(failure instanceof Error ? failure.message : "Preview image failed."); }
+    const loader = mediaLoader.current!;
+    const links = privateMediaLinks(preview, location.origin);
+    if (previewPage.current !== page) loader.retain(new Set());
+    previewPage.current = page;
+    previewLinks.current = links;
+    loader.retain(new Set(links.values()));
+    // Content goes first. The frame asks for visible media, including newly opened
+    // galleries. Cached bytes are sent once per frame, never on every keystroke.
+    const media: Record<string, string> = {};
+    for (const [original, src] of links) {
+      const cached = loader.cache.get(src);
+      if (cached && !sentMedia.current.has(original)) { media[original] = cached; sentMedia.current.add(original); }
     }
-    void sync(); return () => { cancelled = true; };
-  }, [content, ready, page, editable, targets, post]);
+    post({ type: "snapshot", content: preview, page, editable, targets: targets.map(({ id, label, selector }) => ({ id, label, selector })), privateSources: [...links.keys()], media });
+    requestMedia.current = (sources) => {
+      for (const original of new Set(sources)) {
+        const src = links.get(original);
+        if (!src || sentMedia.current.has(original)) continue;
+        void loader.load(src).then(data => {
+          if (previewRevision.current !== revision || previewLinks.current.get(original) !== src || sentMedia.current.has(original)) return;
+          sentMedia.current.add(original);
+          post({ type: "media", media: { [original]: data } });
+          setPreviewError("");
+        }).catch(failure => { if (previewRevision.current === revision && failure.name !== "AbortError") setPreviewError(failure.message || "Preview image failed."); });
+      }
+    };
+    // Metadata and first-screen branding do not depend on DOM visibility.
+    requestMedia.current([...privateMediaLinks({ logo: preview.global.logo, favicon: preview.global.favicon }, location.origin).keys()]);
+  }, [content, ready, previewConnection, page, editable, targets, post]);
+  useEffect(() => () => { previewRevision.current++; mediaLoader.current?.retain(new Set()); }, []);
+
   function validate(next: ContentSnapshot) {
     const parsed = contentSnapshotSchema.safeParse(next);
     if (!parsed.success) throw new Error(contentIssueSummary(parsed.error.issues, next));
@@ -283,17 +296,17 @@ export default function VisualEditor() {
     if (!content || !future.length || busy || uploading) return;
     setPast((history) => [...history, content]); setContent(future[future.length - 1]); setFuture((history) => history.slice(0, -1)); setPanel(null); setError(""); setStatus("Change reapplied.");
   }
-  return <div className="ve-editor"><header className="ve-toolbar" inert={showSections}><Link className="ve-brand" href="/dashboard">GANESH <span>ADMIN</span></Link><label>Page<select aria-label="Page" disabled={busy || uploading} value={page} onChange={(event) => { setPage(event.target.value as PageId); setSelected("hero"); setPanel(null); }}>{Object.entries(pages).map(([id, entry]) => <option key={id} value={id}>{entry.label}</option>)}</select></label><div className="ve-mode"><button aria-pressed={editable} onClick={() => setEditable(true)}>Edit</button><button aria-pressed={!editable} onClick={() => { setEditable(false); setPanel(null); }}>Preview</button></div><label>Screen size<select aria-label="Screen size" value={device} onChange={(event) => setDevice(event.target.value)}><option value="desktop">Desktop</option><option value="tablet">Tablet</option><option value="mobile">Mobile</option></select></label><span className="ve-save-state">{dirty ? "● Unsaved changes" : savedName ? `✓ Draft saved: ${savedName}` : "All changes saved"}</span><button disabled={!content || busy || uploading} onClick={() => setDraftDialog("save")}>{busy ? "Saving…" : "Save Draft"}</button><button disabled={!content || busy || uploading} onClick={() => setDraftDialog("changes")}>Changes ({changes.length})</button><button disabled={busy || uploading} onClick={() => { setDraftDialog("drafts"); void refreshDrafts().catch(failure => setError(failure.message)); }}>Drafts ({drafts.length})</button>{canPublish ? <button className="primary" disabled={!content || busy || uploading} onClick={() => setPublishConfirm(true)}>Save &amp; Publish</button> : <span className="ve-save-state">Ask a team member with publishing access to make your changes live</span>}</header>
+  return <MediaContentContext.Provider value={{ content, publicOrigin: session?.origin }}><div className="ve-editor"><header className="ve-toolbar" inert={showSections}><Link className="ve-brand" href="/dashboard">GANESH <span>ADMIN</span></Link><label>Page<select aria-label="Page" disabled={busy || uploading} value={page} onChange={(event) => { setPage(event.target.value as PageId); setSelected("hero"); setPanel(null); }}>{Object.entries(pages).map(([id, entry]) => <option key={id} value={id}>{entry.label}</option>)}</select></label><div className="ve-mode"><button aria-pressed={editable} onClick={() => setEditable(true)}>Edit</button><button aria-pressed={!editable} onClick={() => { setEditable(false); setPanel(null); }}>Preview</button></div><label>Screen size<select aria-label="Screen size" value={device} onChange={(event) => setDevice(event.target.value)}><option value="desktop">Desktop</option><option value="tablet">Tablet</option><option value="mobile">Mobile</option></select></label><span className="ve-save-state">{dirty ? "● Unsaved changes" : savedName ? `✓ Draft saved: ${savedName}` : "All changes saved"}</span><button disabled={!content || busy || uploading} onClick={() => setDraftDialog("save")}>{busy ? "Saving…" : "Save Draft"}</button><button disabled={!content || busy || uploading} onClick={() => setDraftDialog("changes")}>Changes ({changes.length})</button><button disabled={busy || uploading} onClick={() => { setDraftDialog("drafts"); void refreshDrafts().catch(failure => setError(failure.message)); }}>Drafts ({drafts.length})</button>{canPublish ? <button className="primary" disabled={!content || busy || uploading} onClick={() => setPublishConfirm(true)}>Publish</button> : <span className="ve-save-state">Publishing access required</span>}</header>
     <div className="ve-status" aria-live="polite" inert={showSections}><button ref={sectionsToggle} className="ve-sections-toggle" aria-controls="editor-sections" aria-expanded={showSections} onClick={() => setShowSections(!showSections)}>Sections</button><span>{pages[page].label} / {targets.find((t) => t.id === selected)?.label ?? "Page"} · {editable ? "Edit mode" : "Preview mode"}</span><span>{status}</span></div>
     {error ? <div className="ve-error" role="alert">{adminMessage(error)}</div> : null}
     {refreshPending ? <button onClick={async () => { const response = await fetch("/api/content/revalidate", { method: "POST" }).catch(() => null); if (response?.ok) { setRefreshPending(false); setStatus("Public refresh completed."); } else setError("Public refresh still unavailable. Try again."); }}>Retry public refresh</button> : null}
-    <div className="ve-workspace">{showSections ? <button className="ve-sections-backdrop" aria-label="Close sections" onClick={closeSections} /> : null}<aside ref={sectionsRef} id="editor-sections" role={showSections ? "dialog" : undefined} aria-modal={showSections ? true : undefined} aria-label="Page sections" className={`ve-sidebar${showSections ? " ve-sidebar-open" : ""}`}><div className="ve-sidebar-heading"><h1>Visual Editor</h1><button className="ve-sections-close" aria-label="Close sections" onClick={closeSections}>×</button></div><p>{editable ? "Choose a section to find it in the preview. Select Edit to open its content controls." : "Customer view. Editing controls are hidden."}</p><label className="ve-section-search">Find a section<input type="search" placeholder="Search sections…" value={sectionQuery} onChange={(event) => setSectionQuery(event.target.value)} /></label><nav aria-label="Page sections">{sectionGroups.map((group) => <section className="ve-section-group" key={group.label}><h2>{group.label}</h2>{group.items.filter((section) => section.label.toLowerCase().includes(sectionQuery.toLowerCase())).map((section) => <div className={`ve-section-row${selected === section.id ? " selected" : ""}`} key={section.id}><button aria-current={selected === section.id ? "true" : undefined} onClick={() => { setSelected(section.id); post({ type: "scroll", selector: section.selector }); setShowSections(false); }}>{section.label}</button>{editable ? <button aria-label={`Edit ${section.label}`} disabled={!content || uploading || busy} onClick={() => { openPanel(section); setShowSections(false); }}>Edit</button> : null}</div>)}</section>)}</nav>{!sections.some((s) => s.label.toLowerCase().includes(sectionQuery.toLowerCase())) ? <p>No matching sections.</p> : null}<div className="ve-history"><button disabled={!past.length || busy || uploading} onClick={undo}>Undo</button><button disabled={!future.length || busy || uploading} onClick={redo}>Redo</button></div></aside>
+    <div className="ve-workspace">{showSections ? <button className="ve-sections-backdrop" aria-label="Close sections" onClick={closeSections} /> : null}<aside ref={sectionsRef} id="editor-sections" role={showSections ? "dialog" : undefined} aria-modal={showSections ? true : undefined} aria-label="Page sections" className={`ve-sidebar${showSections ? " ve-sidebar-open" : ""}`}><div className="ve-sidebar-heading"><h1>Visual Editor</h1><button className="ve-sections-close" aria-label="Close sections" onClick={closeSections}>×</button></div><p>{editable ? "Choose a section, then select Edit." : "Website preview"}</p><label className="ve-section-search">Find a section<input type="search" placeholder="Search sections…" value={sectionQuery} onChange={(event) => setSectionQuery(event.target.value)} /></label><nav aria-label="Page sections">{sectionGroups.map((group) => <section className="ve-section-group" key={group.label}><h2>{group.label}</h2>{group.items.filter((section) => section.label.toLowerCase().includes(sectionQuery.toLowerCase())).map((section) => <div className={`ve-section-row${selected === section.id ? " selected" : ""}`} key={section.id}><button aria-current={selected === section.id ? "true" : undefined} onClick={() => { setSelected(section.id); post({ type: "scroll", selector: section.selector }); setShowSections(false); }}>{section.label}</button>{editable ? <button aria-label={`Edit ${section.label}`} disabled={!content || uploading || busy} onClick={() => { openPanel(section); setShowSections(false); }}>Edit</button> : null}</div>)}</section>)}</nav>{!sections.some((s) => s.label.toLowerCase().includes(sectionQuery.toLowerCase())) ? <p>No matching sections.</p> : null}<div className="ve-history"><button disabled={!past.length || busy || uploading} onClick={undo}>Undo</button><button disabled={!future.length || busy || uploading} onClick={redo}>Redo</button></div></aside>
     <main ref={canvasRef} className="ve-canvas-area"><div className={`ve-canvas ve-device-${device}`}>
       {!content ? <div className="ve-loading" role="status">Loading saved draft…</div> : null}
       {session ? <iframe ref={frame} title="Ganesh website visual preview" src={`${session.origin}/editor-preview?token=${encodeURIComponent(session.token)}`} allow="fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" referrerPolicy="no-referrer" /> : null}
       {content && (!ready || previewError) ? <div className="ve-loading" role="status"><p>{previewError ? adminMessage(previewError) : "Connecting to your website preview…"}</p>{previewError ? <button onClick={() => void startPreview()}>Reconnect preview</button> : null}</div> : null}
     </div></main>
-    {panel ? <aside ref={panelRef} className="ve-panel" aria-label="Edit content panel"><header><div><small>{pages[page].label} / EDIT CONTENT</small><h2>{panel.target.label}</h2></div><button aria-label="Close edit panel and keep changes" disabled={uploading || busy} onClick={done}>×</button></header><p>Edits stay in your working preview as you type. Save Draft to keep a named snapshot, or publish when ready.</p><fieldset disabled={uploading || busy}>{panel.values.fabricCategories && panel.values.fabrics ? <FabricCatalogEditor key={panel.target.id} categories={panel.values.fabricCategories as NonNullable<ContentSnapshot["fabricCategories"]>} fabrics={panel.values.fabrics as ContentSnapshot["fabrics"]} initialCategoryId={panel.fabricCategoryId} initialCardId={panel.fabricCardId} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} requestRemove={(title, _item, apply) => setRemove({ title, apply })} onChange={(categories, fabrics, categoryId) => updatePanel({ fabricCategories: categories, fabrics }, categoryId)} /> : null}{panel.values.featuredProducts ? <FeaturedProductsEditor key={panel.target.id} value={panel.values.featuredProducts as NonNullable<ContentSnapshot["featuredProducts"]>} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} requestRemove={(title, _item, apply) => setRemove({ title, apply })} onChange={(featuredProducts) => updatePanel({ featuredProducts })} /> : null}{Object.entries(panel.values).filter(([path]) => path !== "featuredProducts" && (!panel.values.fabricCategories || !["fabricCategories", "fabrics"].includes(path))).map(([path, value]) => <EditorFields key={path} path={path} name={/^products\.\d+$/.test(path) ? "Product" : path.split(".").at(-1)!} value={value} template={getAt(initialContent, path)} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} onChange={(next) => updatePanel({ [path]: next })} requestRemove={(title, item, apply) => {
+    {panel ? <aside ref={panelRef} className="ve-panel" aria-label="Edit content panel"><header><div><small>{pages[page].label} / EDIT CONTENT</small><h2>{panel.target.label}</h2></div><button aria-label="Close edit panel and keep changes" disabled={uploading || busy} onClick={done}>×</button></header><p>Preview updates as you type. Save a draft or publish when ready.</p><fieldset disabled={uploading || busy}>{panel.values.fabricCategories && panel.values.fabrics ? <FabricCatalogEditor key={panel.target.id} categories={panel.values.fabricCategories as NonNullable<ContentSnapshot["fabricCategories"]>} fabrics={panel.values.fabrics as ContentSnapshot["fabrics"]} initialCategoryId={panel.fabricCategoryId} initialCardId={panel.fabricCardId} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} requestRemove={(title, _item, apply) => setRemove({ title, apply })} onChange={(categories, fabrics, categoryId) => updatePanel({ fabricCategories: categories, fabrics }, categoryId)} /> : null}{panel.values.featuredProducts ? <FeaturedProductsEditor key={panel.target.id} value={panel.values.featuredProducts as NonNullable<ContentSnapshot["featuredProducts"]>} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} requestRemove={(title, _item, apply) => setRemove({ title, apply })} onChange={(featuredProducts) => updatePanel({ featuredProducts })} /> : null}{Object.entries(panel.values).filter(([path]) => path !== "featuredProducts" && (!panel.values.fabricCategories || !["fabricCategories", "fabrics"].includes(path))).map(([path, value]) => <EditorFields key={path} path={path} name={/^products\.\d+$/.test(path) ? "Product" : path.split(".").at(-1)!} value={value} template={getAt(initialContent, path)} products={content?.products ?? []} publicOrigin={session?.origin ?? "http://localhost:3000"} onBusy={setUploading} onChange={(next) => updatePanel({ [path]: next })} requestRemove={(title, item, apply) => {
       if (item && typeof item === "object" && "id" in item && path.startsWith("products")) {
         const references = content?.workCategories.filter((category) => category.story.relatedProductIds.includes(String(item.id))).map((category) => category.label) ?? [];
         if (references.length) { setError(`Cannot remove ${title}: included in ${references.join(", ")}. Edit those Our Work stories and uncheck the related product first.`); return; }
@@ -303,5 +316,5 @@ export default function VisualEditor() {
     {draftDialog ? <EditorDraftDialogs initialView={draftDialog} changes={changes} drafts={drafts} dirty={dirty} busy={busy} error={adminMessage(error)} origin={session?.origin ?? "http://localhost:3000"} onClose={() => setDraftDialog(null)} onUndo={undoField} onDiscard={() => { if (baseContent) replaceWorking(structuredClone(baseContent)); setPanel(null); }} onSave={saveNamedDraft} onLoad={loadDraft} onRefresh={refreshDrafts} /> : null}
     {publishConfirm ? <EditorDialog title="Publish your changes?" onClose={() => setPublishConfirm(false)}><p>Your changes will be visible to everyone on the Ganesh website.</p><footer><button onClick={() => setPublishConfirm(false)}>Cancel</button><button className="primary" onClick={() => { setPublishConfirm(false); void saveAndPublish(); }}>Publish changes</button></footer></EditorDialog> : null}
     {remove ? <EditorDialog title={`Remove ${remove.title}?`} onClose={() => setRemove(null)}><p>This item will be removed when you publish. Its images and saved history will still be kept.</p><footer><button onClick={() => setRemove(null)}>Cancel</button><button className="primary" onClick={() => { remove.apply(); setRemove(null); }}>Remove item</button></footer></EditorDialog> : null}
-  </div>;
+  </div></MediaContentContext.Provider>;
 }

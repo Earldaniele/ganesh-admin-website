@@ -29,9 +29,17 @@ try {
   await writeFile(".visual-qa/media-library/original-draft.json", JSON.stringify(original));
   const synced = await http.post(`${origin}/api/media/sync`, { headers: { origin } }); assert.equal(synced.status(), 200, await synced.text());
   const again = await http.post(`${origin}/api/media/sync`, { headers: { origin } }); assert.equal((await again.json()).added, 0, "Import must be idempotent");
-  const inventory = await (await http.get(`${origin}/api/media`)).json();
+  const inventory = await (await http.get(`${origin}/api/media?pageSize=100`)).json();
+  for (let page = 2; inventory.media.length < inventory.total; page++) {
+    const batch = await (await http.get(`${origin}/api/media?pageSize=100&page=${page}`)).json();
+    inventory.media.push(...batch.media);
+  }
   assert.ok(inventory.media.some((media: any) => media.existing && media.mimeType.startsWith("video/")), "Existing videos must be visible");
-  const protectedMedia = inventory.media.find((media: any) => media.usages.some((usage: any) => usage.location.startsWith("Revision")));
+  let protectedMedia: any;
+  for (const item of inventory.media) {
+    const detail = await (await http.get(`${origin}/api/media/${item.assetId}`)).json();
+    if (detail.media.usages.some((usage: any) => usage.location.startsWith("Revision"))) { protectedMedia = detail.media; break; }
+  }
   assert.ok(protectedMedia, "Revision media must be discoverable");
   const blocked = await http.delete(`${origin}/api/media/${protectedMedia.assetId}`, { headers: { origin } }); assert.equal(blocked.status(), 409); assert.ok((await blocked.json()).usages.length);
   assert.equal((await http.post(`${origin}/api/media/sync`, { headers: { origin: "https://untrusted.example" } })).status(), 403);

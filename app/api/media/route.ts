@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   if (!await requireAdmin()) return Response.json({ error: "Sign in required." }, { status: 401 });
   const pool = getMySqlPool();
   if (!pool) return Response.json({ error: "CMS is not configured." }, { status: 503 });
-  try { return Response.json({ media: await listMedia(pool, new URL(request.url).origin) }, { headers: { "cache-control": "private, no-store" } }); }
+  const url = new URL(request.url);
+  try { return Response.json(await listMedia(pool, url.origin, { search: url.searchParams.get("search") || "", type: url.searchParams.get("type") || "all", page: Number(url.searchParams.get("page")), pageSize: Number(url.searchParams.get("pageSize")) }), { headers: { "cache-control": "private, no-store" } }); }
   catch { return Response.json({ error: "Cannot load Media Library. Check MariaDB and apply the media library migration." }, { status: 503 }); }
 }
 

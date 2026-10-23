@@ -5,10 +5,10 @@ import { getDraftContent } from "@/lib/content/store";
 import { getMySqlPool, type DbRow } from "@/lib/mysql/db";
 
 const quickActions: { href: string; icon: IconName; label: string; description: string }[] = [
-  { href: "/editor", icon: "edit", label: "Open Visual Editor", description: "Edit the home page directly on a live canvas." },
-  { href: "/settings/general", icon: "building", label: "General Settings", description: "Update your business name and site details." },
-  { href: "/settings/branding", icon: "paint", label: "Branding", description: "Review your logo and website images." },
-  { href: "/settings/contact", icon: "phone", label: "Contact Information", description: "Keep customer contact details accurate." },
+  { href: "/editor", icon: "edit", label: "Visual Editor", description: "Edit your pages visually." },
+  { href: "/settings/general", icon: "building", label: "General Settings", description: "Business and site details." },
+  { href: "/settings/branding", icon: "paint", label: "Branding", description: "Logo and website images." },
+  { href: "/settings/contact", icon: "phone", label: "Contact", description: "Phone, email, and address." },
 ];
 const activityLabels: Record<string, string> = { draft_saved: "Website changes saved", published: "Website updated", media_uploaded: "Media added", media_deleted: "Media deleted", user_created: "Team member added", user_role_changed: "Team member access changed", role_updated: "Team permissions updated", role_created: "Team role added", account_updated: "Account updated" };
 
@@ -22,13 +22,13 @@ export default async function DashboardPage() {
   const published = publications[0];
   const site = process.env.PUBLIC_SITE_ORIGIN || "http://localhost:3000";
   return (
-    <AdminShell eyebrow="Workspace overview" title="Your Ganesh workspace">
+    <AdminShell eyebrow="Workspace overview" title="Dashboard">
       <div className="dashboard-content">
         <section className="welcome-banner">
           <div>
             <span className="banner-kicker">{draft ? "Ready to edit your website" : "Content unavailable · Contact your administrator"}</span>
-            <h2>Keep the Ganesh story looking its best.</h2>
-            <p>Make visual updates, review your brand details, and prepare changes before they go live.</p>
+            <h2>Your website, at a glance.</h2>
+            <p>Edit, save, and publish your updates.</p>
             <Link className="primary-button" href="/editor"><Icon name="edit" /> Edit home page</Link>
           </div>
           <div className="website-card" aria-label="Website status">
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
         </section>
 
         <section className="dashboard-section">
-          <div className="section-heading"><div><p>Start here</p><h2>Quick actions</h2></div><span>Everything you need, one click away</span></div>
+          <div className="section-heading"><div><p>Start here</p><h2>Quick actions</h2></div></div>
           <div className="quick-grid">
             {quickActions.map((action) => (
               <Link className="quick-card" href={action.href} key={action.href}>

@@ -12,6 +12,15 @@
 .cms-actions, .cms-item-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 0; }
 .cms-actions { position: sticky; top: 0; z-index: 2; background: #f6f2e9; }
 .cms-actions span { margin-right: auto; }
+.cms-actions > button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.cms-actions svg,.cms-section-nav svg { width: 18px; height: 18px; flex-shrink: 0; }
+.cms-section-nav { display: flex; gap: 6px; margin: 10px 0 20px; padding: 5px; background: #eae3d7; border-radius: 10px; }
+.cms-section-nav a { display: flex; flex: 1; gap: 8px; align-items: center; justify-content: center; min-height: 46px; padding: 10px 12px; border-radius: 7px; color: #70665d; text-decoration: none; font-size: 14px; font-weight: 600; }
+.cms-section-nav a[aria-current] { background: #fffdf8; color: #4b1118; box-shadow: 0 1px 4px #4b111814; }
+.cms-section-nav a:focus-visible { outline: 3px solid #bd893a; outline-offset: 2px; }
+.cms-order-builder { border-radius: 10px; }
+#media-library,#website-content { scroll-margin-top: 8rem; }
+@media(max-width:640px) { .cms-section-nav a { flex-direction: column; gap: 4px; padding: 8px 4px; font-size: 12px; } }
 .cms-fields button:not(.primary-button) { padding: 8px 12px; border: 1px solid #cdbfad; border-radius: 6px; cursor: pointer; background: #fffaf1; color: #4b1118; }
 .cms-fields button:disabled { opacity: .5; cursor: not-allowed; }
 .cms-error { white-space: pre-wrap; background: #fff0ec; color: #7c281b; padding: 14px; border-radius: 8px; }
@@ -33,6 +42,9 @@
 .cms-option-row span { color: #9b1d24; font-weight: 700; }
 .cms-option-row input, .cms-default-grid input, .cms-default-grid select { min-width: 0; border: 1px solid #d9d0c3; border-radius: 6px; padding: 10px; background: white; color: #2b191b; }
 .cms-option-row button { font-size: .78rem; }
+.cms-option-row button { display: inline-grid; place-items: center; min-width: 44px; min-height: 44px; }
+.cms-option-row svg { width: 18px; height: 18px; }
+.cms-move-up { transform: rotate(180deg); }
 .cms-order-defaults { margin-top: 20px; }
 .cms-default-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
 .cms-default-grid label { display: grid; gap: 6px; color: #4b403a; font-size: .8rem; font-weight: 700; }

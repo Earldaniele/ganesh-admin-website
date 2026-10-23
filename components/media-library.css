@@ -25,7 +25,7 @@
 .ml-error { padding: 12px; border-radius: 6px; background: #fff0ec; color: #7c281b; white-space: pre-wrap; overflow-wrap: anywhere; }
 .ml-dialog { position: fixed; inset: 0; margin: auto; width: min(1000px,calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: hidden; padding: 0; border: 1px solid #decba8; border-radius: 10px; background: #fffdf7; color: #4b1118; box-sizing: border-box; font: 14px/1.5 var(--font-inter), sans-serif; }
 .ml-dialog[open] { display: flex; flex-direction: column; }
-.ml-dialog-details { width: min(780px,calc(100vw - 32px)); }
+.ml-dialog-details { width: min(680px,calc(100vw - 32px)); }
 .ml-dialog-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px; }
 .ml-dialog::backdrop { background: rgb(20 4 5 / .65); }
 .ml-dialog > header { display: flex; flex-shrink: 0; gap: 20px; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid #e7ddcf; }
@@ -46,6 +46,8 @@
 .ml-history summary { cursor: pointer; font-weight: 600; padding: 4px 0; }.ml-history h4 { margin: 16px 0 4px; }
 .ml-history summary:focus-visible { outline: 3px solid #bd893a; outline-offset: 3px; }
 .ml-deletion-note { background: #f4ecdf; border-radius: 6px; padding: 12px; margin: 0 0 14px; }
+.ml-dialog .ml-danger { border-color: #9b1d24; color: #9b1d24; font-weight: 600; }
+.ml-delete-actions .ml-preview img { max-height: 100px; }
 .ml-action-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .ml-description { margin-bottom: 15px; }
 .ml-heading > *, .ml-toolbar > *, .ml-dialog > header > *, .ml-file-info > div { min-width: 0; }
@@ -54,4 +56,26 @@
 .ml-dialog button, .ml-library button, .ml-upload { min-height: 44px; max-width: 100%; }
 .ml-dialog > header button { flex-shrink: 0; }
 .ml-card strong { white-space: normal; overflow-wrap: anywhere; }
+.ml-library svg,.ml-dialog svg { width: 18px; height: 18px; flex-shrink: 0; }
+.ml-upload { display: inline-flex; gap: 8px; align-items: center; }
+.ml-upload-help { margin-top: 12px; color: #70665d; font-size: 12px; }
+.ml-upload-help summary,.ml-file-more summary { cursor: pointer; }
+.ml-upload-help p { margin-bottom: 0; }
+.ml-file-summary h3 { margin: 0 0 4px; font-size: 16px; overflow-wrap: anywhere; }
+.ml-file-summary > p { margin: 0 0 16px; }
+.ml-file-more { color: #70665d; font-size: 12px; }
+.ml-file-more dl { padding-top: 12px; }
+.ml-usage-summary { margin-top: 20px; padding: 16px; background: #f4efe5; border-radius: 8px; }
+.ml-usage-summary p { margin: 8px 0 0; font-size: 13px; }
+.ml-usage-badge { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 13px; }
+.ml-unused { color: #286141; }
+.ml-dialog-footer { flex-shrink: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 24px; border-top: 1px solid #e7ddcf; background: #fffdf7; }
+.ml-delete-confirm { margin-top: 20px; padding: 14px; border: 1px solid #d4a6a1; border-radius: 8px; }
+.ml-dialog-details .ml-preview { min-height: 160px; }
+.ml-dialog-details .ml-preview img,.ml-dialog-details .ml-preview video { max-height: 220px; }
+.ml-description { margin-bottom: 8px; }
+.ml-description + p { margin-top: 0; font-size: 12px; }
+.ml-history { margin-top: 16px; padding-top: 12px; }
+.ml-history > p { font-size: 12px; }
 @media(max-width:640px) { .ml-library,.ml-dialog-body { padding: 16px; }.ml-dialog > header { padding: 12px 16px; gap: 12px; }.ml-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }.ml-toolbar > label { flex-basis: 100%; }.ml-details-overview { grid-template-columns: minmax(0,1fr); gap: 18px; }.ml-dialog .ml-file-info { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }.ml-file-info > div:first-child { grid-column: 1/-1; }.ml-preview img,.ml-preview video { max-height: 28dvh; }.ml-heading h2 { font-size: 21px; } }
+@media(max-width:640px) { .ml-dialog-footer { padding: 12px 16px; }.ml-dialog-details .ml-preview { min-height: 100px; }.ml-dialog-details .ml-preview img,.ml-dialog-details .ml-preview video { max-height: 24dvh; } }

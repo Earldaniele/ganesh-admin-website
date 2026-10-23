@@ -3,7 +3,7 @@ export type MediaUsage = { location: string; path: string; kind?: MediaUsageKind
 export type LibraryMedia = {
   assetId: string; src: string; alt: string; filename: string; mimeType: string;
   size: number | null; uploadedAt: string | null; width: number | null; height: number | null;
-  existing: boolean; usages: MediaUsage[];
+  existing: boolean; usages: MediaUsage[]; thumbnail?: string;
 };
 
 export function mediaSelection(media: LibraryMedia, alt = "") {

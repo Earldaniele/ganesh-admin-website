@@ -26,5 +26,5 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
       return new Response(bytes.subarray(start, end + 1), { status: 206, headers: { ...headers, "content-range": `bytes ${start}-${end}/${bytes.length}`, "content-length": String(end - start + 1) } });
     }
     return new Response(bytes, { headers: { ...headers, "content-length": String(bytes.length) } });
-  } catch { return new Response(null, { status: 503 }); }
+  } catch (error) { return new Response(null, { status: (error as NodeJS.ErrnoException).code === "ENOENT" ? 404 : 503, headers: { "cache-control": "private, no-store" } }); }
 }
