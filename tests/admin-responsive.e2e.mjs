@@ -35,7 +35,7 @@ async function screenshot(name) { await page.screenshot({ path: `${output}/${nam
 async function openSections(width) {
   if (width <= 900) await page.getByRole("button", { name: "Sections", exact: true }).click();
 }
-async function cancelPanel() { await page.getByRole("button", { name: "Cancel editing", exact: true }).click(); }
+async function cancelPanel() { await page.getByRole("button", { name: "Close edit panel and keep changes", exact: true }).click(); }
 
 try {
   if (process.env.ADMIN_TEST_DB_SESSION === "1") {

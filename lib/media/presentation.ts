@@ -43,7 +43,7 @@ export function usageKind(usage: MediaUsage): MediaUsageKind {
   if (usage.path === "designMedia" || usage.path.startsWith("designMedia.")) return "backup";
   if (usage.kind) return usage.kind;
   if (/^Published\b/.test(usage.location)) return "website";
-  if (/^(Draft\b|Current content\b)/.test(usage.location)) return "changes";
+  if (/^(Draft\b|Saved draft\b|Current content\b)/.test(usage.location)) return "changes";
   if (/^Revision\b/.test(usage.location)) return "history";
   if (/^Website fallback\b/.test(usage.location)) return "backup";
   return "other";

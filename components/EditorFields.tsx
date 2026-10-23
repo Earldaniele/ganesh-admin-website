@@ -12,8 +12,23 @@ const object = (value: unknown): value is Record<string, unknown> => !!value && 
 export function EditorDialog({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   const id = useId();
-  useEffect(() => { const previous = document.activeElement as HTMLElement | null; ref.current?.showModal(); return () => previous?.focus(); }, []);
-  return <dialog ref={ref} className="ve-dialog" aria-labelledby={id} onCancel={(event) => { event.preventDefault(); onClose(); }}><header><h2 id={id}>{title}</h2><button type="button" aria-label="Close dialog" onClick={onClose}>×</button></header>{children}</dialog>;
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    const dialog = ref.current;
+    dialog?.showModal();
+    return () => {
+      // Release native modal inertness before returning focus to the opener.
+      dialog?.close();
+      if (previous?.isConnected) previous.focus();
+    };
+  }, []);
+  return <dialog ref={ref} className="ve-dialog" aria-labelledby={id} onCancel={(event) => { event.preventDefault(); onClose(); }} onKeyDown={event => {
+    if (event.key !== "Tab") return;
+    const items = [...event.currentTarget.querySelectorAll<HTMLElement>("button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex='0']")].filter(element => element.getClientRects().length > 0);
+    const first = items[0], last = items.at(-1);
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === event.currentTarget)) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  }}><header><h2 id={id}>{title}</h2><button type="button" aria-label="Close dialog" onClick={onClose}>×</button></header>{children}</dialog>;
 }
 
 export function MediaField({ value, onChange, publicOrigin, onBusy }: { value: Record<string, unknown>; onChange: (value: unknown) => void; publicOrigin: string; onBusy: (busy: boolean) => void }) {
@@ -51,7 +66,7 @@ export function VideoField({ value, onChange, publicOrigin, onBusy }: { value: R
     setBusy(true); onBusy(true); setError(""); setStatus("");
     try {
       const result = await uploadMedia(file, String(value.alt || "Product video"), setProgress);
-      onChange({ ...value, src: result.src, assetId: result.assetId }); setStatus("Video uploaded. Save Changes to keep this selection.");
+      onChange({ ...value, src: result.src, assetId: result.assetId }); setStatus("Video uploaded to your working preview. Save Draft to keep it for later.");
     } catch (failure) { setError(failure instanceof Error ? failure.message : "Video upload failed."); }
     finally { setBusy(false); onBusy(false); }
   }

@@ -20,6 +20,11 @@ export async function snapshots(db: Pool | PoolConnection) {
     const [rows] = await db.query(`SELECT site_key, version, content FROM ${table}`) as unknown as [DbRow[], unknown];
     for (const row of rows) result.push({ location: `${label} ${row.version} · ${row.site_key}`, content: jsonColumn(row.content) });
   }
+  const [savedDrafts] = await db.query("SELECT name, content, base_content FROM saved_editor_drafts") as unknown as [DbRow[], unknown];
+  for (const row of savedDrafts) {
+    result.push({ location: `Saved draft · ${row.name}`, content: jsonColumn(row.content) });
+    result.push({ location: `Saved draft before · ${row.name}`, content: jsonColumn(row.base_content) });
+  }
   // These are still used by the public website during database outages and initial rendering.
   for (const filename of ["initial-content.json", "current-design.json"]) {
     result.push({ location: `Website fallback · ${filename}`, content: JSON.parse(await readFile(path.join(process.cwd(), "lib/content", filename), "utf8")) });

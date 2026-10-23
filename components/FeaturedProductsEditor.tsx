@@ -32,7 +32,7 @@ export function FeaturedProductsEditor(props: Props) {
         gallery.push({ id: crypto.randomUUID(), label, image: media });
         change({ ...product, gallery: [...gallery] });
       }
-      setMessage(`${files.length} images uploaded. Review their captions and alt text, then Save Changes.`);
+      setMessage(`${files.length} images uploaded to your working preview. Review their captions and alt text, then Save Draft.`);
     } catch (failure) { setMessage(""); setError(`${failure instanceof Error ? failure.message : "Upload failed."} ${gallery.length - product.gallery.length} images added; retry the remaining files.`); }
     finally { setBusy(false); props.onBusy(false); }
   }

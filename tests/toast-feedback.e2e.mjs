@@ -37,6 +37,12 @@ async function dismiss() {
   await page.getByRole("button", { name: "Dismiss notification" }).click();
   await toast.waitFor({ state: "detached" });
 }
+async function saveEditorDraft() {
+  await page.locator(".ve-toolbar").getByRole("button", { name: "Save Draft", exact: true }).click();
+  await page.getByLabel("Draft name", { exact: true }).fill("Notification QA draft");
+  await page.getByRole("dialog").getByRole("button", { name: "Save Draft", exact: true }).click();
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+}
 async function publish() {
   await page.getByRole("button", { name: "Save & Publish", exact: true }).click();
   await page.getByRole("button", { name: "Publish changes", exact: true }).click();
@@ -75,6 +81,15 @@ export default async function ToastQA({ searchParams }: { searchParams: Promise<
     if (failure || (publicationFailure && method === "POST")) return route.fulfill({ status: 503, json: { error: failure || "Draft saved, but publishing failed." } });
     if (method === "PUT") { draft = route.request().postDataJSON().content; version++; }
     return route.fulfill({ json: { ok: true, content: draft, version, revalidated: refresh } });
+  });
+  const namedDrafts = [];
+  await page.route("**/api/editor-drafts*", async route => {
+    if (route.request().method() === "GET") return route.fulfill({ json: { drafts: namedDrafts } });
+    if (failure) return route.fulfill({ status: 503, json: { error: failure } });
+    const body = route.request().postDataJSON();
+    const entry = { ...body, id: String(namedDrafts.length + 1), savedAt: new Date().toISOString(), changeCount: 0, changes: [], sections: [] };
+    namedDrafts.push(entry);
+    return route.fulfill({ status: 201, json: { ok: true, draft: entry } });
   });
   await page.route("**/api/editor-preview", (route) => route.fulfill({ status: 503, json: { error: "Preview offline for isolated notification test." } }));
   await page.route("**/api/media?**", (route) => route.fulfill({ json: { assets: [], total: 0 } }));
@@ -119,13 +134,11 @@ export default async function ToastQA({ searchParams }: { searchParams: Promise<
   console.log("PASS: save failure, partial publish failure, successful publication with refresh retry");
 
   await page.goto(path("editor"));
-  await page.getByRole("button", { name: "Edit Hero / introduction", exact: true }).click();
-  await page.getByRole("button", { name: "Apply changes", exact: true }).click();
-  await expectToast("Changes applied successfully.");
-  await dismiss();
-  await page.getByRole("button", { name: "Edit Featured products · video & gallery", exact: true }).click();
-  await page.getByRole("button", { name: "Save Changes", exact: true }).click();
-  await expectToast("Changes saved successfully.");
+  await page.getByRole("button", { name: "Edit Introduction", exact: true }).click();
+  await page.getByRole("button", { name: "Done", exact: true }).click();
+  assert.equal(await toast.count(), 0, "Closing a panel keeps edits without an apply notification");
+  await saveEditorDraft();
+  await expectToast("Draft saved successfully.");
   const desktop = await toast.boundingBox();
   const toolbar = await page.locator(".ve-status").boundingBox();
   assert.ok(desktop.y >= toolbar.y + toolbar.height, "Toast must clear editor save controls");
@@ -133,7 +146,7 @@ export default async function ToastQA({ searchParams }: { searchParams: Promise<
   await page.screenshot({ path: ".visual-qa/toast-desktop.png", animations: "disabled" });
   await dismiss();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("button", { name: "Save Draft", exact: true }).click();
+  await saveEditorDraft();
   await expectToast("Draft saved successfully.");
   const mobile = await toast.boundingBox();
   const mobileToolbar = await page.locator(".ve-status").boundingBox();
@@ -146,11 +159,11 @@ export default async function ToastQA({ searchParams }: { searchParams: Promise<
   assert.equal(await toast.count(), 1, "Keyboard focus must pause dismissal");
   await dismiss();
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.getByRole("button", { name: "Save Draft", exact: true }).click();
+  await saveEditorDraft();
   await expectToast("Draft saved successfully.");
   assert.ok(await toast.evaluate((element) => parseFloat(getComputedStyle(element).animationDuration) < .01));
   await dismiss();
-  console.log("PASS: apply/save changes, desktop/mobile placement, keyboard pause, reduced motion");
+  console.log("PASS: free editing/named drafts, desktop/mobile placement, keyboard pause, reduced motion");
 
   await page.goto(path("settings/general"));
   await page.getByLabel("Business name").waitFor();

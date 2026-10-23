@@ -64,6 +64,15 @@ try {
     if (method === "POST") publishCount++;
     return route.fulfill({ json: { ok: true, content, version, revalidated: true } });
   });
+  const namedDrafts = [];
+  await page.route("**/api/editor-drafts*", async route => {
+    if (route.request().method() === "GET") return route.fulfill({ json: { drafts: namedDrafts } });
+    const body = route.request().postDataJSON();
+    lastSaved = body.content;
+    const draft = { ...body, id: String(namedDrafts.length + 1), savedAt: new Date().toISOString(), changeCount: 0, changes: [], sections: [] };
+    namedDrafts.push(draft);
+    return route.fulfill({ status: 201, json: { ok: true, draft } });
+  });
   const previewImage = await readFile("public/images/work/sports-02.webp");
   await page.route("**/qa-media/**", (route) => route.fulfill({ contentType: "image/webp", body: previewImage }));
   await page.route("**/api/media", (route) => route.fulfill({ json: { media } }));
@@ -156,10 +165,12 @@ try {
   assert.equal(publishCount, 1);
   await page.goto(`${origin}/editor`);
   await page.getByRole("button", { name: "Edit Introduction", exact: true }).click();
-  await page.getByRole("button", { name: "Apply changes", exact: true }).click();
-  await page.getByText("Preview updated. Save Draft to keep your changes.", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Done", exact: true }).click();
   await page.getByRole("button", { name: "Save Draft", exact: true }).click();
-  await page.getByText("Changes saved.", { exact: true }).waitFor();
+  await page.getByLabel("Draft name", { exact: true }).fill("Language QA draft");
+  await page.getByRole("dialog").getByRole("button", { name: "Save Draft", exact: true }).click();
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  await page.getByText("Draft saved: Language QA draft", { exact: true }).waitFor();
   await page.getByRole("button", { name: "Save & Publish", exact: true }).click();
   await page.getByRole("dialog", { name: "Publish your changes?" }).getByRole("button", { name: "Publish changes", exact: true }).click();
   await page.getByText("Your website is up to date.", { exact: true }).waitFor();

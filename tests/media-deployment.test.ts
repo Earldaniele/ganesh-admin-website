@@ -28,7 +28,7 @@ test("sync preserves imported localhost media after a production domain change, 
       if (sql === "SELECT * FROM media_assets") return [rows];
       if (sql.includes("FROM site_drafts")) return [[{ site_key: "ganesh-main", version: 1,
         content: { image: { src: "/images/work/events-02.webp", alt: "Existing photo" } } }]];
-      if (sql.includes("FROM site_publications") || sql.includes("FROM content_revision_history")) return [[]];
+      if (sql.includes("FROM site_publications") || sql.includes("FROM content_revision_history") || sql.includes("FROM saved_editor_drafts")) return [[]];
       throw new Error(`Unexpected query: ${sql}`);
     },
     async execute() { insertAttempts++; throw new Error("Duplicate source_key would fail the production sync"); },

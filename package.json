@@ -16,6 +16,7 @@
     "test:e2e:states": "node --test tests/cms-state.e2e.mjs",
     "test:e2e:dialogs": "node --test tests/admin-dialog.e2e.mjs",
     "test:e2e:responsive": "node tests/admin-responsive.e2e.mjs",
+    "test:e2e:editor": "node tests/editor-drafts.e2e.mjs",
     "seed:content": "node --experimental-strip-types scripts/seed-content.ts",
     "migrate:content": "node --experimental-strip-types scripts/extend-content.ts",
     "create:admin": "node --experimental-strip-types scripts/create-admin.ts",
